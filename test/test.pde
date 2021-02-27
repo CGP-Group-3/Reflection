@@ -8,19 +8,27 @@
   - get timeout to work on other pages
     (timeout is not implemented well - only works once)
   - enable double tap
+  - display settings
+  - display history
 */
 
+//buttons for settings, history & control ("home")
 RectButton settingsBtn, historyBtn;
 CircButton controlBtn;
+
+//variable to store screen state
 int state = 1;
 
 void setup(){
   //set size of display/sketch
   size(600, 900);
   
+  //x, y & width for buttons
   int x = 100;
   int y = 90;
   int w = 150;
+  
+  //instantiating buttons
   settingsBtn = new RectButton(x, y, w, 40, "Settings");
   historyBtn = new RectButton(x+w+20, y, w, 40, "History");
   controlBtn = new CircButton(width/2, height-80, 45, 45);
@@ -31,8 +39,10 @@ void draw(){
   background(0);
   textSize(24);
   
+  //draw home/control button
   controlBtn.drawButton();
   
+  //conditional block to control which screen to display
   if(state == 0){
     displayOff();
     wakeDisplay();
@@ -53,13 +63,17 @@ void draw(){
   }
 }
 
+//what to display when screen/display is off
 void displayOff(){}
 
+//this is shown when john stands on the mat i guess
+//welcomes him
 void displayWelcome(){
   text("Hello John", width/2-57, height/2-25);
   text("Would you like to weigh yourself?", width/2-180, height/2+25);
 }
 
+//displays the display/dashboard
 void displayDisplay(){
   displayDate();
   
@@ -67,14 +81,18 @@ void displayDisplay(){
   historyBtn.drawButton();
 }
 
+//displays the settings
 void displaySettings(){
   text("settings", width/2, height/2);
 }
 
+//displays the history
 void displayHistory(){
   text("history", width/2, height/2);
 }
 
+//if u sit on the welcome screen for longer than 5s, display will go to sleep
+//it doesn't work like i thought it would work
 void timeoutDisplay(){
   float now = millis();
   
@@ -83,6 +101,7 @@ void timeoutDisplay(){
   }
 }
 
+//turn display back on
 void wakeDisplay(){
   controlBtn.hoverButton(2);
 }

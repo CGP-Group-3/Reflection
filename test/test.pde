@@ -10,6 +10,7 @@ import processing.net.*;
   - network library
   - positioning of settings buttons
   - convert changes in weight so can display in lbs too
+  - function to increase/decrease font size
 */
 
 //buttons for settings, history & control ("home")

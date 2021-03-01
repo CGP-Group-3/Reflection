@@ -1,15 +1,11 @@
 /*
-  gabriele when u do the side panel,
-  write your code in the function displayDisplay() pls
-*/
-
-/*
   to-do:
   - get timeout to work on other pages
     (timeout is not implemented well - only works once)
   - enable double tap
   - display settings
   - display history
+  - network library
 */
 
 //buttons for settings, history & control ("home")
@@ -18,6 +14,7 @@ CircButton controlBtn;
 
 //variable to store screen state
 int state = 1;
+int xTxt=width+335;//x positioning of text at right hand side panel
 
 void setup(){
   //set size of display/sketch
@@ -79,6 +76,24 @@ void displayDisplay(){
   
   settingsBtn.drawButton();
   historyBtn.drawButton();
+  
+  for (int i= 250; i<=610; i=i+180){
+    rect(490,i, 130,150,7);
+  }//3 display boxes on the right hand side
+  
+  text("Weight:", xTxt, 230);
+  text("90kg", xTxt, 260);
+  
+  text("BMI:", xTxt, 410);
+  text("25.2", xTxt, 440);
+  
+  text("Body fat:", xTxt, 590);
+  text("25%", xTxt, 620);
+  
+  textSize(15);
+  text("-1kg", xTxt, 280);
+  text("-0.3", xTxt, 460);
+  text("-0.2%", xTxt, 640);
 }
 
 //displays the settings

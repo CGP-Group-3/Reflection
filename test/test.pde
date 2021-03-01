@@ -17,8 +17,11 @@ import processing.net.*;
 RectButton settingsBtn, historyBtn;
 CircButton controlBtn;
 
+//buttons for toggling between units (cm & ft and kg & lbs)
 RectButton toggleCm;
 RectButton toggleKg;
+
+//buttons for increasing and decreasing font size
 RectButton fontPlus;
 RectButton fontMinus;
 
@@ -60,11 +63,17 @@ void draw(){
   //draw home/control button
   controlBtn.drawButton();
   
+  //display interface
   displayScreen();
 }
 
 void displayScreen(){
   //conditional block to control which screen to display
+  //0 is off
+  //1 is welcome
+  //2 is the dashboard
+  //3 is settings
+  //4 is history
   if(state == 0){
     displayOff();
     wakeDisplay();
@@ -86,17 +95,21 @@ void displayScreen(){
 }
 
 void mouseReleased(){
+  //when on settings page...
   if(state == 3){
+    //...if mouse is over the cm/kg button...
     boolean isOnCm = mouseX > toggleCm.x-toggleCm.w/2 && mouseX < toggleCm.x+toggleCm.w/2
                      && mouseY > toggleCm.y-toggleCm.h/2 && mouseY < toggleCm.y+toggleCm.h/2;
                      
     boolean isOnKg = mouseX > toggleKg.x-toggleKg.w/2 && mouseX < toggleKg.x+toggleKg.w/2
                      && mouseY > toggleKg.y-toggleKg.h/2 && mouseY < toggleKg.y+toggleKg.h/2;
   
+    //...toggle height unit
     if(isOnCm){
       isCm = !isCm;
     }
      
+    //toggle weight unit
     if(isOnKg){
       isKg = !isKg;
     }
@@ -117,16 +130,20 @@ void displayWelcome(){
 void displayDisplay(){
   displayDate();
   
+  //draw settings and history buttons
   settingsBtn.drawButton();
   historyBtn.drawButton();
   
+  //display user profile
   u1.displayUserProfile();
   
+  //3 display boxes on the right hand side
   for (int i= 250; i<=610; i=i+180){
     noFill();
     rect(490,i, 130,150,7);
-  }//3 display boxes on the right hand side
+  }
   
+  //display weight
   text("Weight:", xTxt, 230);
   if(isKg){
     text(u1.getKg() + "kg", xTxt, 260);
@@ -134,12 +151,15 @@ void displayDisplay(){
     text(u1.getLb() + "lbs", xTxt, 260);
   }
   
+  //display bmi
   text("BMI:", xTxt, 410);
   text(u1.calculateBMI(), xTxt, 440);
   
+  //display body fat %
   text("Body fat:", xTxt, 590);
   text(u1.getBodyFat(), xTxt, 620);
   
+  //display stat changes in weight, bmi and body fat %
   textSize(font/1.6);
   text("-1kg", xTxt, 280);
   text("-0.3", xTxt, 460);
@@ -147,7 +167,8 @@ void displayDisplay(){
 }
 
 //displays the settings
-void displaySettings(){  
+void displaySettings(){
+  //initialise buttons located in the settings
   toggleCm = new RectButton(width/3*2, height/7*4.5, 50, 40, "cm");
   toggleKg = new RectButton(width/3*2, height/7*5, 50, 40, "kg");
   fontPlus = new RectButton(width/3*2+80, height/7*5.5, 50, 40, "+");
@@ -157,7 +178,7 @@ void displaySettings(){
   //personal settings
   text("Personal", width/2-43, height/7*1.5);
   
-  //height
+  //change height
   if(isCm){
     text("Height: " + u1.getCm() + "cm", width/2-45, height/7*2);
   } else {
@@ -167,22 +188,27 @@ void displaySettings(){
   //system settings
   text("System", width/2-42, height/7*4);
   
+  //height units
   if(isCm){
     text("Units (height): cm", width/2-45, height/7*4.5);
   } else {
     text("Units (height): ft", width/2-45, height/7*4.5);
   }
   
+  //display height unit switch button
   toggleCm.drawButton();
   
+  //weight units
   if(isKg){
     text("Units (weight): kg", width/2-45, height/7*5);
   } else {
     text("Units (weight): lbs", width/2-45, height/7*5);
   }
   
+  //display weight unit switch button
   toggleKg.drawButton();
   
+  //display font size and increase/decrease font size buttons
   text("Font size: " + font, width/2-45, height/7*5.5);
   fontMinus.drawButton();
   fontPlus.drawButton();

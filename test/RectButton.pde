@@ -1,7 +1,7 @@
 class RectButton extends Button {
   String label;
   
-  RectButton(int tempX, int tempY, int tempW, int tempH, String tempLabel){
+  RectButton(float tempX, float tempY, float tempW, float tempH, String tempLabel){
     super(tempX, tempY, tempW, tempH);
     label = tempLabel;
   }

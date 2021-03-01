@@ -1,7 +1,7 @@
 class CircButton extends Button {
   //no, I do not know what I'm doing
   
-  CircButton(int tempX, int tempY, int tempW, int tempH){
+  CircButton(float tempX, float tempY, float tempW, float tempH){
     super(tempX, tempY, tempW, tempH);
   }
   

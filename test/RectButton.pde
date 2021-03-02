@@ -10,8 +10,10 @@ class RectButton extends Button {
   void drawButton(){
     rectMode(CENTER);
     noFill();
-    rect(x, y, w, h, 5);
     stroke(255);
+    rect(x, y, w, h, 5);
+    fill(255);
+    textSize(fontSize);
     text(label, x-w/3.5, y+h/4-1);
   }
 }

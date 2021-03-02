@@ -4,15 +4,14 @@ import processing.net.*;
   to-do:
   - get timeout to work on other pages
     (timeout is not implemented well - only works once)
-  - enable double tap
+  - enable double tap?
   - display settings
   - display history
   - network library
   - positioning of settings buttons
   - convert changes in weight so can display in lbs too
-  - function to increase/decrease font size
   - method for inputting height
-  - method for inputting blood pressure
+  - method for inputting blood pressure?
 */
 
 //buttons for settings, history & control ("home")
@@ -27,6 +26,8 @@ RectButton toggleKg;
 RectButton fontPlus;
 RectButton fontMinus;
 
+RectButton changeH;
+
 //variable to store screen state
 int state = 1;
 int xTxt=width+335;//x positioning of text at right hand side panel
@@ -39,6 +40,13 @@ boolean isCm = true;
 
 //user 1 (john)
 User u1;
+
+//array for numPadArr button labels
+String[] labelArr = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "enter", "backspace"};
+//array of RectButtons for number pad
+RectButton[] numPadArr = new RectButton[labelArr.length];
+
+boolean shouldNumPadDisplay = false;
 
 void setup(){
   //set size of display/sketch
@@ -54,7 +62,23 @@ void setup(){
   historyBtn = new RectButton(x+w+20, y, w, 40, "History");
   controlBtn = new CircButton(width/2, height-80, 45, 45);
   
+  //instantiate u1
   u1 = new User("John", 178, 90, 25);
+  
+  //instantiating num pad buttons 1 to 9
+  int a = 1;
+  int b = 1;
+  for(int i = 1; i < 4; i++){
+    for(int j = 1; j < 4; j++){
+      numPadArr[b] = new RectButton(width/5*j, height/9*(i+3), 80, 80, labelArr[a]);
+      a++;
+      b++;
+    }
+  }
+  
+  numPadArr[0] = new RectButton(width/5*2, height/9*7, 80*3, 80, labelArr[0]);
+  numPadArr[numPadArr.length-2] = new RectButton(width/5*4, height/9*6.5, 80, 80*2, labelArr[numPadArr.length-2]);
+  numPadArr[numPadArr.length-1] = new RectButton(width/5*4, height/9*4.4, 80, 80, labelArr[numPadArr.length-1]);
 }
 
 void draw(){
@@ -104,11 +128,6 @@ void mouseReleased(){
                      && mouseY > toggleCm.y-toggleCm.h/2 && mouseY < toggleCm.y+toggleCm.h/2;
     boolean isOnKg = mouseX > toggleKg.x-toggleKg.w/2 && mouseX < toggleKg.x+toggleKg.w/2
                      && mouseY > toggleKg.y-toggleKg.h/2 && mouseY < toggleKg.y+toggleKg.h/2;
-                     
-    boolean isOnPlus = mouseX > fontPlus.x-fontPlus.w/2 && mouseX < fontPlus.x+fontPlus.w/2
-                     && mouseY > fontPlus.y-fontPlus.h/2 && mouseY < fontPlus.y+fontPlus.h/2;
-    boolean isOnMinus = mouseX > fontMinus.x-fontMinus.w/2 && mouseX < fontMinus.x+fontMinus.w/2
-                     && mouseY > fontMinus.y-fontMinus.h/2 && mouseY < fontMinus.y+fontMinus.h/2;
   
     //...toggle height unit
     if(isOnCm){
@@ -120,6 +139,12 @@ void mouseReleased(){
       isKg = !isKg;
     }
     
+    //if mouse if over font increase/decrease button
+    boolean isOnPlus = mouseX > fontPlus.x-fontPlus.w/2 && mouseX < fontPlus.x+fontPlus.w/2
+                       && mouseY > fontPlus.y-fontPlus.h/2 && mouseY < fontPlus.y+fontPlus.h/2;
+    boolean isOnMinus = mouseX > fontMinus.x-fontMinus.w/2 && mouseX < fontMinus.x+fontMinus.w/2
+                        && mouseY > fontMinus.y-fontMinus.h/2 && mouseY < fontMinus.y+fontMinus.h/2;
+    
     //increase font size
     if(isOnPlus && fontSize <= 36){
       fontSize += 4;
@@ -128,6 +153,23 @@ void mouseReleased(){
     //decrease font size
     if(isOnMinus && fontSize >= 24){
       fontSize -= 4;
+    }
+    
+    //if mouse over change height button
+    boolean isOnChangeH = mouseX > changeH.x-changeH.w/2 && mouseX < changeH.x+changeH.w/2
+                          && mouseY > changeH.y-changeH.h/2 && mouseY < changeH.y+changeH.h/2;
+    
+    //toggle input num pad
+    if(isOnChangeH){
+      shouldNumPadDisplay = !shouldNumPadDisplay;    
+      //i should be able to switch units
+      //i should be able to input numbers
+      //i should be able to backspace what i've written
+      //i should be able to submit what i inputted
+      //all of the above should be bundled as one unit/thing to reuse for input blood pressure
+      //the system needs to restrict length of input
+      //e.g. ft should be 1 number and must be greater than or equal to 0
+      //inches can be 2 numbers between 0 (including) and 12 (excluding?)
     }
   }
 }
@@ -186,11 +228,12 @@ void displayDisplay(){
 
 //displays the settings
 void displaySettings(){
-  //initialise buttons located in the settings
-  toggleCm = new RectButton(width/3*2, height/7*4.5, 50, 40, "cm");
-  toggleKg = new RectButton(width/3*2, height/7*5, 50, 40, "kg");
+  //instantiate buttons located in the settings
+  toggleCm = new RectButton(width/3*2, height/7*4.5, 140, 40, "switch units");
+  toggleKg = new RectButton(width/3*2, height/7*5, 140, 40, "switch units");
   fontPlus = new RectButton(width/3*2+80, height/7*5.5, 50, 40, "+");
   fontMinus = new RectButton(width/3*2, height/7*5.5, 50, 40, "-");
+  changeH = new RectButton(width/2-45, height/7*2, 140, 40, "change");
   
   textSize(fontSize);
   text("Settings", width/2-42, height/7);
@@ -203,6 +246,8 @@ void displaySettings(){
   } else {
     text("Height: " + u1.getFtInch(), width/2-45, height/7*2);
   }
+  
+  changeH.drawButton();
   
   //system settings
   text("System", width/2-42, height/7*4);
@@ -231,6 +276,8 @@ void displaySettings(){
   text("Font size: " + fontSize, width/2-45, height/7*5.5);
   fontMinus.drawButton();
   fontPlus.drawButton();
+  
+  displayNumPad();
 }
 
 //displays the history
@@ -332,4 +379,16 @@ String sortMonth(int month){
   }
   
   return m;
+}
+
+void displayNumPad(){
+  if(shouldNumPadDisplay){
+    fill(0);
+    noStroke();
+    rectMode(CORNER);
+    rect(0, height/2, width, height/2-150);
+    for(int i = 0; i < numPadArr.length; i++){
+      numPadArr[i].drawButton();
+    }
+  }
 }

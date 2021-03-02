@@ -18,7 +18,7 @@ class User{
     noFill();
     rect(490, 80, 130, 130, 7);
     fill(255);
-    textSize(font);
+    textSize(fontSize);
     text("profile", width/7*5.25, height/10);
   }
   

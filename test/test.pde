@@ -11,6 +11,8 @@ import processing.net.*;
   - positioning of settings buttons
   - convert changes in weight so can display in lbs too
   - function to increase/decrease font size
+  - method for inputting height
+  - method for inputting blood pressure
 */
 
 //buttons for settings, history & control ("home")
@@ -29,7 +31,7 @@ RectButton fontMinus;
 int state = 1;
 int xTxt=width+335;//x positioning of text at right hand side panel
 
-int font = 24;
+int fontSize = 24;
 
 //height & weight units setting
 boolean isKg = true;
@@ -58,7 +60,7 @@ void setup(){
 void draw(){
   //make bg black
   background(0);
-  textSize(font);
+  textSize(fontSize);
   
   //draw home/control button
   controlBtn.drawButton();
@@ -100,9 +102,13 @@ void mouseReleased(){
     //...if mouse is over the cm/kg button...
     boolean isOnCm = mouseX > toggleCm.x-toggleCm.w/2 && mouseX < toggleCm.x+toggleCm.w/2
                      && mouseY > toggleCm.y-toggleCm.h/2 && mouseY < toggleCm.y+toggleCm.h/2;
-                     
     boolean isOnKg = mouseX > toggleKg.x-toggleKg.w/2 && mouseX < toggleKg.x+toggleKg.w/2
                      && mouseY > toggleKg.y-toggleKg.h/2 && mouseY < toggleKg.y+toggleKg.h/2;
+                     
+    boolean isOnPlus = mouseX > fontPlus.x-fontPlus.w/2 && mouseX < fontPlus.x+fontPlus.w/2
+                     && mouseY > fontPlus.y-fontPlus.h/2 && mouseY < fontPlus.y+fontPlus.h/2;
+    boolean isOnMinus = mouseX > fontMinus.x-fontMinus.w/2 && mouseX < fontMinus.x+fontMinus.w/2
+                     && mouseY > fontMinus.y-fontMinus.h/2 && mouseY < fontMinus.y+fontMinus.h/2;
   
     //...toggle height unit
     if(isOnCm){
@@ -113,6 +119,16 @@ void mouseReleased(){
     if(isOnKg){
       isKg = !isKg;
     }
+    
+    //increase font size
+    if(isOnPlus && fontSize <= 36){
+      fontSize += 4;
+    }
+     
+    //decrease font size
+    if(isOnMinus && fontSize >= 24){
+      fontSize -= 4;
+    }
   }
 }
 
@@ -122,12 +138,14 @@ void displayOff(){}
 //this is shown when john stands on the mat i guess
 //welcomes him
 void displayWelcome(){
+  textSize(fontSize);
   text("Hello " + u1.name, width/2-57, height/2-25);
   text("Would you like to weigh yourself?", width/2-180, height/2+25);
 }
 
 //displays the display/dashboard
 void displayDisplay(){
+  textSize(fontSize);
   displayDate();
   
   //draw settings and history buttons
@@ -160,7 +178,7 @@ void displayDisplay(){
   text(u1.getBodyFat(), xTxt, 620);
   
   //display stat changes in weight, bmi and body fat %
-  textSize(font/1.6);
+  textSize(fontSize/1.6);
   text("-1kg", xTxt, 280);
   text("-0.3", xTxt, 460);
   text("-0.2%", xTxt, 640);
@@ -174,6 +192,7 @@ void displaySettings(){
   fontPlus = new RectButton(width/3*2+80, height/7*5.5, 50, 40, "+");
   fontMinus = new RectButton(width/3*2, height/7*5.5, 50, 40, "-");
   
+  textSize(fontSize);
   text("Settings", width/2-42, height/7);
   //personal settings
   text("Personal", width/2-43, height/7*1.5);
@@ -209,13 +228,14 @@ void displaySettings(){
   toggleKg.drawButton();
   
   //display font size and increase/decrease font size buttons
-  text("Font size: " + font, width/2-45, height/7*5.5);
+  text("Font size: " + fontSize, width/2-45, height/7*5.5);
   fontMinus.drawButton();
   fontPlus.drawButton();
 }
 
 //displays the history
 void displayHistory(){
+  textSize(fontSize);
   text("History", width/2-42, height/7);
 }
 
@@ -263,6 +283,7 @@ void displayDate(){
     mins2 = str(mins);
   }
   
+  textSize(fontSize);
   //write text to show time
   text(hour + ":" + mins2 + ", " + d + " " + m + " " + year, 30, 50);
 }

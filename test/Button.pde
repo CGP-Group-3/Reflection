@@ -1,5 +1,5 @@
 class Button{
-  //width, height, start x, start y, button label/name
+  //width, height, start x, start y
   float w;
   float h;
   float x;

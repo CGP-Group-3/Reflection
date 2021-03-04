@@ -1,17 +1,19 @@
-import processing.net.*;
-
 /*
   to-do:
   - get timeout to work on other pages
     (timeout is not implemented well - only works once)
-  - enable double tap?
+  - enable double tap
   - display settings
   - display history
   - network library
   - positioning of settings buttons
   - convert changes in weight so can display in lbs too
   - method for inputting height
-  - method for inputting blood pressure?
+  - input name
+  - motivational quote
+  - goals
+  - make table - mockup data
+  - create boolean active for each button, provide feedback for user when clicking
 */
 
 //buttons for settings, history & control ("home")
@@ -20,7 +22,9 @@ CircButton controlBtn;
 
 //buttons for toggling between units (cm & ft and kg & lbs)
 RectButton toggleCm;
+RectButton toggleFt;
 RectButton toggleKg;
+RectButton toggleLb;
 
 //buttons for increasing and decreasing font size
 RectButton fontPlus;
@@ -46,6 +50,8 @@ String[] labelArr = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "enter", 
 //array of RectButtons for number pad
 RectButton[] numPadArr = new RectButton[labelArr.length];
 
+float t1;
+
 boolean shouldNumPadDisplay = false;
 
 void setup(){
@@ -58,8 +64,8 @@ void setup(){
   int w = 150;
   
   //instantiating buttons
-  settingsBtn = new RectButton(x, y, w, 40, "Settings");
-  historyBtn = new RectButton(x+w+20, y, w, 40, "History");
+  settingsBtn = new RectButton(x, y, w, 40, "Settings", 42, 8);
+  historyBtn = new RectButton(x+w+20, y, w, 40, "History", 40, 8);
   controlBtn = new CircButton(width/2, height-80, 45, 45);
   
   //instantiate u1
@@ -70,20 +76,20 @@ void setup(){
   int b = 1;
   for(int i = 1; i < 4; i++){
     for(int j = 1; j < 4; j++){
-      numPadArr[b] = new RectButton(width/5*j, height/9*(i+3), 80, 80, labelArr[a]);
+      numPadArr[b] = new RectButton(width/5*j, height/9*(i+3), 80, 80, labelArr[a], 30, 30);
       a++;
       b++;
     }
   }
   
-  numPadArr[0] = new RectButton(width/5*2, height/9*7, 80*3, 80, labelArr[0]);
-  numPadArr[numPadArr.length-2] = new RectButton(width/5*4, height/9*6.5, 80, 80*2, labelArr[numPadArr.length-2]);
-  numPadArr[numPadArr.length-1] = new RectButton(width/5*4, height/9*4.4, 80, 80, labelArr[numPadArr.length-1]);
+  numPadArr[0] = new RectButton(width/5*2, height/9*7, 80*3, 80, labelArr[0], 30, 30);
+  numPadArr[numPadArr.length-2] = new RectButton(width/5*4, height/9*6.5, 80, 80*2, labelArr[numPadArr.length-2], 30, 30);
+  numPadArr[numPadArr.length-1] = new RectButton(width/5*4, height/9*4.4, 80, 80, labelArr[numPadArr.length-1], 30, 30);
 }
 
 void draw(){
   //make bg black
-  background(0);
+  background(26, 26, 26);
   textSize(fontSize);
   
   //draw home/control button
@@ -97,46 +103,66 @@ void displayScreen(){
   //conditional block to control which screen to display
   //0 is off
   //1 is welcome
-  //2 is the dashboard
-  //3 is settings
-  //4 is history
+  //2 is scanning screen
+  //3 is the dashboard
+  //4 is settings
+  //5 is history
   if(state == 0){
     displayOff();
     wakeDisplay();
   } else if(state == 1){
     displayWelcome();
     timeoutDisplay();
-    controlBtn.hoverButton(2);
   } else if(state == 2){
-    displayDisplay();
-    settingsBtn.hoverButton(3);
-    historyBtn.hoverButton(4);
+    displayScanning();
   } else if(state == 3){
-    displaySettings();
-    controlBtn.hoverButton(2);
+    displayDisplay();
+    settingsBtn.hoverButton(4);
+    historyBtn.hoverButton(5);
   } else if(state == 4){
+    displaySettings();
+    controlBtn.hoverButton(3);
+  } else if(state == 5){
     displayHistory();
-    controlBtn.hoverButton(2);
+    controlBtn.hoverButton(3);
   }
 }
 
 void mouseReleased(){
   //when on settings page...
-  if(state == 3){
-    //...if mouse is over the cm/kg button...
+  if(state == 4){
+    //...if mouse is over the cm/ft/kg/lb button...
     boolean isOnCm = mouseX > toggleCm.x-toggleCm.w/2 && mouseX < toggleCm.x+toggleCm.w/2
                      && mouseY > toggleCm.y-toggleCm.h/2 && mouseY < toggleCm.y+toggleCm.h/2;
+    boolean isOnFt = mouseX > toggleFt.x-toggleFt.w/2 && mouseX < toggleFt.x+toggleFt.w/2
+                     && mouseY > toggleFt.y-toggleFt.h/2 && mouseY < toggleFt.y+toggleFt.h/2;
     boolean isOnKg = mouseX > toggleKg.x-toggleKg.w/2 && mouseX < toggleKg.x+toggleKg.w/2
                      && mouseY > toggleKg.y-toggleKg.h/2 && mouseY < toggleKg.y+toggleKg.h/2;
+    boolean isOnLb = mouseX > toggleLb.x-toggleLb.w/2 && mouseX < toggleLb.x+toggleLb.w/2
+                     && mouseY > toggleLb.y-toggleLb.h/2 && mouseY < toggleLb.y+toggleLb.h/2;
   
-    //...toggle height unit
-    if(isOnCm){
-      isCm = !isCm;
-    }
+    ////...toggle height unit
+    //if(isOnCm){
+    //  isCm = !isCm;
+    //}
      
+    ////toggle weight unit
+    //if(isOnKg){
+    //  isKg = !isKg;
+    //}
+    
+    //toggle height unit
+    if(isOnCm){
+      isCm = true;
+    } else if(isOnFt){
+      isCm = false;
+    }
+    
     //toggle weight unit
     if(isOnKg){
-      isKg = !isKg;
+      isKg = true;
+    } else if(isOnLb){
+      isKg = false;
     }
     
     //if mouse if over font increase/decrease button
@@ -146,7 +172,7 @@ void mouseReleased(){
                         && mouseY > fontMinus.y-fontMinus.h/2 && mouseY < fontMinus.y+fontMinus.h/2;
     
     //increase font size
-    if(isOnPlus && fontSize <= 36){
+    if(isOnPlus && fontSize <= 24){
       fontSize += 4;
     }
      
@@ -155,22 +181,22 @@ void mouseReleased(){
       fontSize -= 4;
     }
     
-    //if mouse over change height button
-    boolean isOnChangeH = mouseX > changeH.x-changeH.w/2 && mouseX < changeH.x+changeH.w/2
-                          && mouseY > changeH.y-changeH.h/2 && mouseY < changeH.y+changeH.h/2;
+    ////if mouse over change height button
+    //boolean isOnChangeH = mouseX > changeH.x-changeH.w/2 && mouseX < changeH.x+changeH.w/2
+    //                      && mouseY > changeH.y-changeH.h/2 && mouseY < changeH.y+changeH.h/2;
     
-    //toggle input num pad
-    if(isOnChangeH){
-      shouldNumPadDisplay = !shouldNumPadDisplay;    
-      //i should be able to switch units
-      //i should be able to input numbers
-      //i should be able to backspace what i've written
-      //i should be able to submit what i inputted
-      //all of the above should be bundled as one unit/thing to reuse for input blood pressure
-      //the system needs to restrict length of input
-      //e.g. ft should be 1 number and must be greater than or equal to 0
-      //inches can be 2 numbers between 0 (including) and 12 (excluding?)
-    }
+    ////toggle input num pad
+    //if(isOnChangeH){
+    //  shouldNumPadDisplay = !shouldNumPadDisplay;    
+    //  //i should be able to switch units
+    //  //i should be able to input numbers
+    //  //i should be able to backspace what i've written
+    //  //i should be able to submit what i inputted
+    //  //all of the above should be bundled as one unit/thing to reuse for input blood pressure
+    //  //the system needs to restrict length of input
+    //  //e.g. ft should be 1 number and must be greater than or equal to 0
+    //  //inches can be 2 numbers between 0 (including) and 12 (excluding?)
+    //}
   }
 }
 
@@ -183,6 +209,10 @@ void displayWelcome(){
   textSize(fontSize);
   text("Hello " + u1.name, width/2-57, height/2-25);
   text("Would you like to weigh yourself?", width/2-180, height/2+25);
+  
+  t1 = millis();
+  
+  controlBtn.hoverButton(2);
 }
 
 //displays the display/dashboard
@@ -226,58 +256,84 @@ void displayDisplay(){
   text("-0.2%", xTxt, 640);
 }
 
+void displayScanning(){
+  boolean loaded = false;
+  
+  textSize(fontSize+6);
+  text("Scan in progress", width/3-20, height/4);
+  textSize(fontSize);
+  text("Please stay still", width/3+10, height/4+40);
+  
+  //loading bar outline
+  rect(30, height/3, width-60, 20, 7);
+  
+  //progress bar
+  fill(255);
+  float t2 = millis() - t1;
+  if(t2 < width*4-240 && !loaded){
+    rect(30, height/3, t2/4, 20, 7);
+  } else {
+    rect(30, height/3, width-60, 20, 7);
+    loaded = !loaded;
+  }
+  
+  if(loaded){
+    text("tap the circle to view the results", width/3-80, height/3+60);
+    controlBtn.hoverButton(3);
+  }
+}
+
 //displays the settings
 void displaySettings(){
   //instantiate buttons located in the settings
-  toggleCm = new RectButton(width/3*2, height/7*4.5, 140, 40, "switch units");
-  toggleKg = new RectButton(width/3*2, height/7*5, 140, 40, "switch units");
-  fontPlus = new RectButton(width/3*2+80, height/7*5.5, 50, 40, "+");
-  fontMinus = new RectButton(width/3*2, height/7*5.5, 50, 40, "-");
-  changeH = new RectButton(width/2-45, height/7*2, 140, 40, "change");
+  toggleCm = new RectButton(width/3+10, 135, 50, 35, "cm", 17, 7);
+  toggleFt = new RectButton(width/3+70, 135, 50, 35, "ft", 10, 7);
+  toggleKg = new RectButton(width/3+10, 186, 50, 35, "kg", 15, 8);
+  toggleLb = new RectButton(width/3+70, 186, 50, 35, "lb", 10, 8);
+  fontPlus = new RectButton(width/3+70, 84, 50, 35, "+", 9, 8);
+  fontMinus = new RectButton(width/3+10, 84, 50, 35, "-", 7.5, 8);
+  changeH = new RectButton(width/2-45, height/7*2, 140, 40, "change", 35, 8);
   
-  textSize(fontSize);
-  text("Settings", width/2-42, height/7);
-  //personal settings
-  text("Personal", width/2-43, height/7*1.5);
-  
-  //change height
-  if(isCm){
-    text("Height: " + u1.getCm() + "cm", width/2-45, height/7*2);
-  } else {
-    text("Height: " + u1.getFtInch(), width/2-45, height/7*2);
-  }
-  
-  changeH.drawButton();
-  
+  textSize(fontSize+6);
   //system settings
-  text("System", width/2-42, height/7*4);
-  
-  //height units
-  if(isCm){
-    text("Units (height): cm", width/2-45, height/7*4.5);
-  } else {
-    text("Units (height): ft", width/2-45, height/7*4.5);
-  }
-  
-  //display height unit switch button
-  toggleCm.drawButton();
-  
-  //weight units
-  if(isKg){
-    text("Units (weight): kg", width/2-45, height/7*5);
-  } else {
-    text("Units (weight): lbs", width/2-45, height/7*5);
-  }
-  
-  //display weight unit switch button
-  toggleKg.drawButton();
+  text("System Settings", 30, 50);
   
   //display font size and increase/decrease font size buttons
-  text("Font size: " + fontSize, width/2-45, height/7*5.5);
+  textSize(fontSize);
+  text("Font size: " + fontSize, 30, 93);
   fontMinus.drawButton();
   fontPlus.drawButton();
   
-  displayNumPad();
+  //height units
+  text("Height units", 30, 143);
+  
+  //display height unit switch button
+  toggleCm.drawButton();
+  toggleFt.drawButton();
+  
+  //weight units
+  text("Weight units", 30, 193);
+  
+  //display weight unit switch button
+  toggleKg.drawButton();
+  toggleLb.drawButton();
+  
+  //personal settings
+  textSize(fontSize+6);
+  text("Personal Settings", width/2+30, 50);
+  
+  textSize(fontSize);
+  text("Name: " + u1.name, width/2+30, 93);
+  //height
+  if(isCm){
+    text("Height: " + u1.getCm() + "cm", width/2+30, 143);
+  } else {
+    text("Height: " + u1.getFtInch(), width/2+30, 143);
+  }
+  
+  //changeH.drawButton();
+    
+  //displayNumPad();
 }
 
 //displays the history
@@ -288,17 +344,17 @@ void displayHistory(){
 
 //if u sit on the welcome screen for longer than 5s, display will go to sleep
 //it doesn't work like i thought it would work
-void timeoutDisplay(){
-  float now = millis();
-  
-  if(now > 5000){
-    state = 0;
-  }
-}
+//void timeoutDisplay(){
+//  float t3 = millis();
+
+//  if(t3 > 5000){
+//    state = 0;
+//  }
+//}
 
 //turn display back on
 void wakeDisplay(){
-  controlBtn.hoverButton(2);
+  controlBtn.hoverButton(1);
 }
 
 //display the time and date in top left
@@ -330,7 +386,7 @@ void displayDate(){
     mins2 = str(mins);
   }
   
-  textSize(fontSize);
+  textSize(fontSize+6);
   //write text to show time
   text(hour + ":" + mins2 + ", " + d + " " + m + " " + year, 30, 50);
 }

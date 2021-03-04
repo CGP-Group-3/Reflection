@@ -1,9 +1,13 @@
 class RectButton extends Button {
   String label;
+  float labelX;
+  float labelY;
   
-  RectButton(float tempX, float tempY, float tempW, float tempH, String tempLabel){
+  RectButton(float tempX, float tempY, float tempW, float tempH, String tempLabel, float tempLabelX, float tempLabelY){
     super(tempX, tempY, tempW, tempH);
     label = tempLabel;
+    labelX = tempLabelX;
+    labelY = tempLabelY;
   }
   
   //draws a rectangle and writes the button name/label on it
@@ -14,6 +18,6 @@ class RectButton extends Button {
     rect(x, y, w, h, 5);
     fill(255);
     textSize(fontSize);
-    text(label, x-w/3.5, y+h/4-1);
+    text(label, x-labelX, y+labelY);
   }
 }

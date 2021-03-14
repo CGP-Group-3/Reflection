@@ -5,14 +5,12 @@
  - enable double tap
  - display settings
  - display history
- - network library
+ - network library?
  - positioning of settings buttons
- - convert changes in weight so can display in lbs too
  - method for inputting height
  - input name
  - motivational quote
  - goals
- - make table - mockup data
  - create boolean active for each button, provide feedback for user when clicking
  */
 
@@ -58,6 +56,10 @@ Table records;
 
 boolean shouldNumPadDisplay = false;
 
+//TODO: think of something better
+int rand;
+String[] motivationalQuotes = {"Eat healthy", "You can do it lol"};
+
 void setup() {
   //set size of display/sketch
   size(600, 900);
@@ -78,6 +80,8 @@ void setup() {
   //loads records.csv from folder
   records = loadTable("records.csv", "header");
   mockData();
+  
+  rand = int(random(motivationalQuotes.length));
 
   //instantiating num pad buttons 1 to 9
   int a = 1;
@@ -130,6 +134,8 @@ void mockData() {
           + "body fat difference: " + u1.getBodyFatDiff());
           
   println(u1.convertToLbs(u1.dW));
+  
+  saveTable(records, "records.csv");
 }
 
 void displayScreen() {
@@ -257,6 +263,9 @@ void displayDisplay() {
   //draw settings and history buttons
   settingsBtn.drawButton();
   historyBtn.drawButton();
+  
+  //show motivational quotes
+  displayMotivational();
 
   //display user profile
   u1.displayUserProfile();
@@ -272,11 +281,11 @@ void displayDisplay() {
   if (isKg) {
     text(u1.getKg() + "kg", xTxt, 260);
     textSize(fontSize/1.6);
-    text(u1.getWeightDiff(), xTxt, 280);
+    text(u1.getWeightDiff() + " kg", xTxt, 280);
   } else {
     text(u1.getLb() + "lbs", xTxt, 260);
     textSize(fontSize/1.6);
-    text(u1.getWeightDiff(), xTxt, 280);
+    text(u1.getWeightDiff() + " lbs", xTxt, 280);
   }
 
   //display bmi
@@ -383,8 +392,30 @@ void displaySettings() {
 
 //displays the history
 void displayHistory() {
+  //top side of mirror
+  textSize(fontSize+6);
+  text("Welcome to your history, " + u1.name + "!", 30, 50);
   textSize(fontSize);
-  text("History", width/2-42, height/7);
+  text("Here is your current progress.", 30, 83);
+  
+  drawVisualisation();
+  
+  //right hand side of mirror
+  textSize(fontSize);
+  
+  //display weight
+  float yPos = 260;
+  if (isKg) {
+    text("Weight: " + u1.getKg() + "kg", xTxt-30, yPos);
+  } else {
+    text("Weight: " + u1.getLb() + "lbs", xTxt-30, yPos);
+  }
+
+  //display bmi
+  text("BMI: " + u1.getBMI(), xTxt-30, yPos+40);
+
+  //display body fat %
+  text("Body fat: " + u1.getBodyFat(), xTxt-30, yPos+80);
 }
 
 //if u sit on the welcome screen for longer than 5s, display will go to sleep
@@ -492,4 +523,51 @@ void displayNumPad() {
       numPadArr[i].drawButton();
     }
   }
+}
+
+void displayMotivational(){  
+  textSize(fontSize);
+  text(motivationalQuotes[rand], 30, 153);
+}
+
+void drawVisualisation(){  
+  //drawing a line/flat ground
+  float y = 210;
+  strokeWeight(2);
+  line(30, y, width-30, y);
+  
+  //bezier curve for mountain
+  float x = 370;
+  beginShape();
+  vertex(x, y);
+  bezierVertex(x+70, y, x+80, y-85, width-30-((width-30-x)/2), 120);
+  bezierVertex(x+140, y-110, x+150, y, width-30, y);
+  endShape();
+  
+  //quadratic curves for mountain snow
+  fill(255);
+  beginShape();
+  vertex(x+81, y-65);
+  quadraticVertex(x+75, y-43, x+98, y-55);
+  quadraticVertex(x+112, y-35, x+125, y-55);
+  quadraticVertex(x+152, y-43, x+139, y-65);
+  quadraticVertex(width-30-((width-30-x)/2)+8, 93, x+81, y-65);
+  endShape();
+  
+  //create and draw checkpoint flags
+  Flag[] flagArr = new Flag[5];
+  int[] flagX = {120, 180, 240, 300, 360};
+  for(int i = 0; i < flagArr.length; i++){
+    flagArr[i] = new Flag(flagX[i], int(y));
+    flagArr[i].drawFlag();
+  }
+  
+  //draw end goal flag
+  line(width-30-((width-30-x)/2)+8, 118, width-30-((width-30-x)/2)+8, 120-35);
+  fill(255);
+  rectMode(CORNER);
+  rect(width-30-((width-30-x)/2)+8, 120-35, 20, 15);
+  noFill();
+  rectMode(CENTER);
+  strokeWeight(1);
 }

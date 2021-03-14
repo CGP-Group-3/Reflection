@@ -42,7 +42,7 @@ class User{
   
   String getLb(){
     lbs = convertToLbs(kg);
-    return nf(lbs, 0, 0);
+    return nf(lbs, 0, 1);
   }
   
   String getBMI(){

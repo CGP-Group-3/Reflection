@@ -1,4 +1,4 @@
-class User{
+class User {
   String name;
   int cm;
   int ft;
@@ -10,150 +10,195 @@ class User{
   float dW;
   float dBodyfat;
   float dBMI;
-  
-  User(String tempName, int tempCm, float tempKg, float tempBodyFat){
+
+  User(String tempName, int tempCm, float tempKg, float tempBodyFat) {
     name = tempName;
     cm = tempCm;
     kg = tempKg;
     bodyfat = tempBodyFat;
   }
-  
-  void displayUserProfile(){
+
+  void displayUserProfile() {
     noFill();
     rect(490, 80, 130, 130, 7);
     fill(255);
     textSize(fontSize);
     text("profile", width/7*5.25, height/10);
   }
-  
-  int getCm(){
+
+  int getCm() {
     return cm;
   }
-  
+
   //string together ft and inches
-  String getFtInch(){
+  String getFtInch() {
     convertToFtInch();
     return ft + "ft " + inch + "inches";
   }
-  
-  String getKg(){
+
+  String getKg() {
     return nf(kg, 0, 1);
   }
-  
-  String getLb(){
+
+  String getLb() {
     lbs = convertToLbs(kg);
     return nf(lbs, 0, 1);
   }
-  
-  String getBMI(){
+
+  String getBMI() {
     return nf(bmi, 0, 1);
   }
-  
-  int convertToCm(){
+
+  int convertToCm() {
     int result = int(ft*30.48 + inch*2.54);
     return result;
   }
-  
-  int convertToFtInch(){
+
+  int convertToFtInch() {
     ft = int(cm/30.48);
     inch = int(((cm/30.48)-ft) % 12 * 10);
     return ft;
   }
-  
-  int convertToKg(){
+
+  int convertToKg() {
     int result = int(lbs/2.205);
     return result;
   }
-  
-  float convertToLbs(float w){
+
+  float convertToLbs(float w) {
     float result = w*2.205;
     return result;
   }
-  
-  float calculateBMI(int h, float w){
+
+  float calculateBMI(int h, float w) {
     float m = float(h)/100;
     bmi = (w/sq(m));
     return bmi;
   }
-  
-  String getBodyFat(){
+
+  String getBodyFat() {
     return nf(bodyfat, 0, 1) + "%";
   }
-  
-  void setKg(float w){
+
+  void setKg(float w) {
     kg = w;
   }
-  
-  void setBodyFat(float b){
+
+  void setBodyFat(float b) {
     bodyfat = b;
   }
-  
-  void setBMI(float b){
+
+  void setBMI(float b) {
     bmi = b;
   }
-  
-  void calculateWeightDiff(){
+
+  void calculateWeightDiff() {
     int num = records.getRowCount();
     dW = kg - records.getFloat(num-2, "weight");
   }
-  
-  void calculateBodyFatDiff(){
+
+  void calculateBodyFatDiff() {
     int num = records.getRowCount();
     dBodyfat = bodyfat - records.getFloat(num-2, "bodyfat");
   }
-  
-  void calculateBMIDiff(){
+
+  void calculateBMIDiff() {
     int num = records.getRowCount();
     dBMI = bmi - records.getFloat(num-2, "bmi");
   }
-  
-  String getWeightDiff(){
+
+  String getWeightDiff() {
     String str;
-    
+
     calculateWeightDiff();
-    
-    if(isKg){
-      if(dW >= 0){
+
+    if (isKg) {
+      if (dW >= 0) {
         str = "+" + nf(dW, 0, 1);
       } else {
         str = nf(dW, 0, 1);
       }
     } else {
-      if(dW >= 0){
+      if (dW >= 0) {
         str = "+" + nf(convertToLbs(dW), 0, 1);
       } else {
         str = nf(convertToLbs(dW), 0, 1);
       }
     }
-    
+
     return str;
   }
-  
-  String getBodyFatDiff(){
+
+  String getBodyFatDiff() {
     String str;
-    
+
     calculateBodyFatDiff();
-    
-    if(dBodyfat >= 0){
+
+    if (dBodyfat >= 0) {
       str = "+" + nf(dBodyfat, 0, 1) + "%";
     } else {
       str = nf(dBodyfat, 0, 1) + "%";
     }
-    
+
     return str;
   }
-  
-  String getBMIDiff(){
+
+  String getBMIDiff() {
     String str;
-    
+
     calculateBMIDiff();
-    
-    if(dBMI >= 0){
+
+    if (dBMI >= 0) {
       str = "+" + nf(dBMI, 0, 1);
     } else {
       str = nf(dBMI, 0, 1);
     }
-    
+
     return str;
+  }
+
+  Boolean getWeightForDay(String str) {
+    try {
+      TableRow row = records.findRow(str, "date");
+      float f = row.getFloat("weight");
+      w = nf(f, 0, 1);
+      isValidDate = true;
+      return isValidDate;
+    } 
+    catch (NullPointerException e) {
+      w = "0.0";
+      isValidDate = false;
+    }
+    return isValidDate;
+  }
+
+  Boolean getBMIForDay(String str) {
+    try {
+      TableRow row = records.findRow(str, "date");
+      float f = row.getFloat("bmi");
+      b = nf(f, 0, 1);
+      isValidDate = true;
+      return isValidDate;
+    } 
+    catch (NullPointerException e) {
+      b = "0.0";
+      isValidDate = false;
+    }
+    return isValidDate;
+  }
+
+  Boolean getBodyFatForDay(String str) {
+    try {
+      TableRow row = records.findRow(str, "date");
+      float f = row.getFloat("bodyfat");
+      bf = nf(f, 0, 1);
+      isValidDate = true;
+      return isValidDate;
+    } 
+    catch (NullPointerException e) {
+      bf = "0.0";
+      isValidDate = false;
+    }
+    return isValidDate;
   }
 }

@@ -1,13 +1,9 @@
 /*
   to-do:
- - get timeout to work on other pages
- (timeout is not implemented well - only works once)
+ - get timeout to work (timeout is not implemented well - only works once)
  - enable double tap
- - display settings
- - display history
- - network library?
  - positioning of settings buttons
- - method for inputting height
+ - way to input height
  - input name
  - motivational quote
  - goals
@@ -28,15 +24,21 @@ RectButton toggleLb;
 RectButton fontPlus;
 RectButton fontMinus;
 
-RectButton changeH;
+//button for changing height, allows john to input new height
+//RectButton changeH;
 
 //variable to store screen state
 int state = 1;
-int xTxt=width+335;//x positioning of text at right hand side panel
 
+//x positioning of text at right hand side panel
+int xTxt=width+335;
+
+//variable to store text size
 int fontSize = 24;
 
 //height & weight units setting
+//whether weight is kg or lbs
+//whether height is cm or ft
 boolean isKg = true;
 boolean isCm = true;
 
@@ -44,17 +46,34 @@ boolean isCm = true;
 User u1;
 
 //array for numPadArr button labels
-String[] labelArr = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "enter", "backspace"};
+String[] labelArr = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "enter", "delete"};
+
 //array of RectButtons for number pad
 RectButton[] numPadArr = new RectButton[labelArr.length];
 
-//store time
+//to store time
 float t1;
 
 //make a table object for getting & storing health records
 Table records;
 
-boolean shouldNumPadDisplay = false;
+//array for date
+//used in screen 5 - history/visualisation
+//copy is used when backspacing so it shows date format
+char[] dateArr = {' ', 'd', 'd', '/', 'm', 'm', '/', 'y', 'y', 'y', 'y'};
+char[] dateArrCopy = {' ', 'd', 'd', '/', 'm', 'm', '/', 'y', 'y', 'y', 'y'};
+
+//count variable used to keep track of index position when inputting/backspacing date
+int count = 0;
+
+//used for retrieving data from csv
+String w = "0.0";
+String b = "0.0";
+String bf = "0.0";
+
+//does the date exist in records.csv? (y/n)
+//if no, will let user know that there is no record for that date
+boolean isValidDate = true;
 
 //TODO: think of something better
 int rand;
@@ -79,29 +98,34 @@ void setup() {
 
   //loads records.csv from folder
   records = loadTable("records.csv", "header");
+
+  //mock up data for when john is measuring his weight
   mockData();
-  
+
+  //set rand to a random number
+  //used for showing a random quote when he visits the dashboard
   rand = int(random(motivationalQuotes.length));
 
   //instantiating num pad buttons 1 to 9
   int a = 1;
   int b = 1;
   for (int i = 1; i < 4; i++) {
-    for (int j = 1; j < 4; j++) {
-      numPadArr[b] = new RectButton(width/5*j, height/9*(i+3), 80, 80, labelArr[a], 30, 30);
+    for (int j = 0; j < 3; j++) {
+      numPadArr[b] = new RectButton(xTxt+(60*j), height/9*4.7+(i*60), 40, 40, labelArr[a], 8, 10);
       a++;
       b++;
     }
   }
 
-  numPadArr[0] = new RectButton(width/5*2, height/9*7, 80*3, 80, labelArr[0], 30, 30);
-  numPadArr[numPadArr.length-2] = new RectButton(width/5*4, height/9*6.5, 80, 80*2, labelArr[numPadArr.length-2], 30, 30);
-  numPadArr[numPadArr.length-1] = new RectButton(width/5*4, height/9*4.4, 80, 80, labelArr[numPadArr.length-1], 30, 30);
+  //instantiating num pad buttons 0, enter and delete
+  numPadArr[0] = new RectButton(xTxt+60, height/9*7.1, 40, 40, labelArr[0], 8, 10);
+  numPadArr[numPadArr.length-2] = new RectButton(xTxt+120, height/9*7.1, 40, 40, labelArr[numPadArr.length-2], 8, 10);
+  numPadArr[numPadArr.length-1] = new RectButton(xTxt, height/9*7.1, 40, 40, labelArr[numPadArr.length-1], 8, 10);
 }
 
 void draw() {
   //make bg black
-  background(26, 26, 26);
+  background(26);
   textSize(fontSize);
 
   //draw home/control button
@@ -118,6 +142,7 @@ void mockData() {
   float tempBMI = u1.calculateBMI(u1.cm, wRand);
   println("weight:" + wRand + ", body fat: " + bodyFatRand + ", bmi: " + tempBMI);
 
+  //update john's current measurements
   u1.setKg(wRand);
   u1.setBodyFat(bodyFatRand);
   u1.setBMI(tempBMI);
@@ -128,13 +153,14 @@ void mockData() {
   newest.setFloat("weight", wRand);
   newest.setFloat("bmi", tempBMI);
   newest.setFloat("bodyfat", bodyFatRand);
-  
-  println("weight difference: " + u1.getWeightDiff() + ", "
-          + "bmi difference: " + u1.getBMIDiff() + ", "
-          + "body fat difference: " + u1.getBodyFatDiff());
-          
-  println(u1.convertToLbs(u1.dW));
-  
+
+  println("date : " + day() + "/" + month() + "/" + year() + "weight difference: " + u1.getWeightDiff() + ", "
+    + "bmi difference: " + u1.getBMIDiff() + ", "
+    + "body fat difference: " + u1.getBodyFatDiff());
+
+  println("in lbs: " + u1.convertToLbs(u1.dW));
+
+  //save the new row to the csv
   saveTable(records, "records.csv");
 }
 
@@ -180,16 +206,6 @@ void mouseReleased() {
     boolean isOnLb = mouseX > toggleLb.x-toggleLb.w/2 && mouseX < toggleLb.x+toggleLb.w/2
       && mouseY > toggleLb.y-toggleLb.h/2 && mouseY < toggleLb.y+toggleLb.h/2;
 
-    ////...toggle height unit
-    //if(isOnCm){
-    //  isCm = !isCm;
-    //}
-
-    ////toggle weight unit
-    //if(isOnKg){
-    //  isKg = !isKg;
-    //}
-
     //toggle height unit
     if (isOnCm) {
       isCm = true;
@@ -219,51 +235,152 @@ void mouseReleased() {
     if (isOnMinus && fontSize >= 24) {
       fontSize -= 4;
     }
+  }
 
-    ////if mouse over change height button
-    //boolean isOnChangeH = mouseX > changeH.x-changeH.w/2 && mouseX < changeH.x+changeH.w/2
-    //                      && mouseY > changeH.y-changeH.h/2 && mouseY < changeH.y+changeH.h/2;
+  //if on history page
+  if (state == 5) {
+    //array of booleans to check if mouse is clicking/releasing over each num pad button
+    boolean[] onNumPadKeyArr = new boolean[numPadArr.length];
+    for (int i = 0; i < numPadArr.length; i++) {
+      onNumPadKeyArr[i] = mouseX > numPadArr[i].x-numPadArr[i].w/2 && mouseX < numPadArr[i].x+numPadArr[i].w/2
+        && mouseY > numPadArr[i].y-numPadArr[i].h/2 && mouseY < numPadArr[i].y+numPadArr[i].h/2;
+    }
 
-    ////toggle input num pad
-    //if(isOnChangeH){
-    //  shouldNumPadDisplay = !shouldNumPadDisplay;    
-    //  //i should be able to switch units
-    //  //i should be able to input numbers
-    //  //i should be able to backspace what i've written
-    //  //i should be able to submit what i inputted
-    //  //all of the above should be bundled as one unit/thing to reuse for input blood pressure
-    //  //the system needs to restrict length of input
-    //  //e.g. ft should be 1 number and must be greater than or equal to 0
-    //  //inches can be 2 numbers between 0 (including) and 12 (excluding?)
-    //}
+    //if a number pad button gets clicked
+    for (int i = 0; i < numPadArr.length; i++) {
+      if (onNumPadKeyArr[i]) {
+        //if delete is clicked and count is at 0, then set count as 0
+        //(don't let it become a negative number)
+        //and set it to the empty date format
+        if (numPadArr[i].label.equals("delete") && count == 0) {
+          count = 0;
+          dateArr[count] = dateArrCopy[count];
+        } else if (numPadArr[i].label.equals("delete") && count > 0 && dateArr[count] == '/') {
+          //if deleting and encounter a slash, skip over it and delete the number before the slash instead
+          count--;
+          dateArr[count] = dateArrCopy[count];
+          count--;
+        } else if (numPadArr[i].label.equals("delete") && count > 0) {
+          //delete previous, decrement counter
+          //set it to value of index in the empty date format array
+          dateArr[count] = dateArrCopy[count];
+          count--;
+        } else if (count < dateArr.length-1 && !numPadArr[i].label.equals("enter")) {
+          //the date arrays have an empty space char at index 0
+          //so increment counter to start filling in date
+          //this prevents weird results when you do a mix of entering and deleting
+          count++;
+          //if after the increment, the contents of that index is a slash,
+          //increment counter again to skip over the slash
+          if(dateArr[count] == '/'){
+            count++; 
+          }
+          //set date to the number of the button
+          //have to set condition to not accept the enter key as otherwise it will
+          //take 'e' as the character to enter
+          dateArr[count] = numPadArr[i].label.charAt(0);
+        } else if (count < dateArr.length && !numPadArr[i].label.equals("enter")) {
+          //if at last index, just set it to the number
+          //no need to increment anymore
+          //error otherwise
+          dateArr[count] = numPadArr[i].label.charAt(0);
+        } else if (numPadArr[i].label.equals("enter") && count == dateArr.length-1) {
+          //if press enter
+          //take the date inputted and make it a string
+          //to search for the record in records.csv
+          //need to use subset to get rid of empty space char at beginning of date array
+          String d = new String(subset(dateArr, 1));
+          u1.getWeightForDay(d);
+          u1.getBMIForDay(d);
+          u1.getBodyFatForDay(d);
+          println("enter");
+        }
+      }
+    }
   }
 }
 
 //what to display when screen/display is off
+//(nothing, display nothing)
 void displayOff() {
 }
 
-//this is shown when john stands on the mat i guess
+//this is shown when john stands on the mat
 //welcomes him
+//SCREEN 1
 void displayWelcome() {
   textSize(fontSize);
   text("Hello " + u1.name, width/2-57, height/2-25);
   text("Would you like to weigh yourself?", width/2-180, height/2+25);
 
+  //set t1 to however long the program has been running
   t1 = millis();
 
+  //goes to screen 2 - scanning
   controlBtn.hoverButton(2);
 }
 
-//displays the display/dashboard
-void displayDisplay() {
+//displayed when john is weighing himself
+//SCREEN 2
+void displayScanning() {
+  //create boolean for when scale is done taking measurements
+  boolean loaded = false;
+
+  //display text letting john know what's going on
+  textSize(fontSize+6);
+  text("Scan in progress", width/3-20, height/4);
   textSize(fontSize);
+  text("Please stay still", width/3+10, height/4+40);
+
+  //scan progress bar total outline
+  rect(30, height/3, width-60, 20, 7);
+
+  //progress bar
+  fill(255);
+  //subtract t2 from t1 to make it zero for load bar to work properly
+  //not doing this will make the load bar start when program starts running
+  //rather than from when this screen is displayed
+  float t2 = millis() - t1;
+  if (t2 < width*4-240 && !loaded) {
+    //width is set to a quarter of t2 to slow down bar
+    rect(30, height/3, t2/4, 20, 7);
+  } else {
+    rect(30, height/3, width-60, 20, 7);
+
+    //loaded is true
+    //finished scanning
+    loaded = !loaded;
+  }
+
+  //if scanning has been completed then below text will display
+  //user has ability to choose to view dashboard now too
+  if (loaded) {
+    fill(26);
+    noStroke();
+    rect(width/4, height/4-35, 800, 80);
+    fill(255);
+    textSize(fontSize+6);
+    text("Scan complete", width/3, height/4);
+    textSize(fontSize);
+    text("tap the circle to view the results", width/3-80, height/4+40);
+    stroke(255);
+    controlBtn.hoverButton(3);
+  }
+}
+
+//displays the display/dashboard
+//SCREEN 3
+void displayDisplay() {
+  //change text size
+  textSize(fontSize);
+
+  //display current date and time
   displayDate();
 
   //draw settings and history buttons
   settingsBtn.drawButton();
   historyBtn.drawButton();
-  
+
   //show motivational quotes
   displayMotivational();
 
@@ -303,41 +420,8 @@ void displayDisplay() {
   text(u1.getBodyFatDiff(), xTxt, 640);
 }
 
-void displayScanning() {
-  boolean loaded = false;
-
-  textSize(fontSize+6);
-  text("Scan in progress", width/3-20, height/4);
-  textSize(fontSize);
-  text("Please stay still", width/3+10, height/4+40);
-
-  //loading bar outline
-  rect(30, height/3, width-60, 20, 7);
-
-  //progress bar
-  fill(255);
-  //subtract t2 from t1 to make it zero for load bar to work properly
-  //not doing this will make the load bar start when program starts running
-  //rather than from when this screen is displayed
-  float t2 = millis() - t1;
-  if (t2 < width*4-240 && !loaded) {
-    rect(30, height/3, t2/4, 20, 7);
-  } else {
-    rect(30, height/3, width-60, 20, 7);
-
-    //loaded is true
-    loaded = !loaded;
-  }
-
-  //if the progress bar has finished "loading" then text will display
-  //user has ability to choose to view dashboard too
-  if (loaded) {
-    text("tap the circle to view the results", width/3-80, height/3+60);
-    controlBtn.hoverButton(3);
-  }
-}
-
 //displays the settings
+//SCREEN 4
 void displaySettings() {
   //instantiate buttons located in the settings
   toggleCm = new RectButton(width/3+10, 135, 50, 35, "cm", 17, 7);
@@ -346,10 +430,10 @@ void displaySettings() {
   toggleLb = new RectButton(width/3+70, 186, 50, 35, "lb", 10, 8);
   fontPlus = new RectButton(width/3+70, 84, 50, 35, "+", 9, 8);
   fontMinus = new RectButton(width/3+10, 84, 50, 35, "-", 7.5, 8);
-  changeH = new RectButton(width/2-45, height/7*2, 140, 40, "change", 35, 8);
+  //changeH = new RectButton(width/2-45, height/7*2, 140, 40, "change", 35, 8);
 
-  textSize(fontSize+6);
   //system settings
+  textSize(fontSize+6);
   text("System Settings", 30, 50);
 
   //display font size and increase/decrease font size buttons
@@ -385,37 +469,54 @@ void displaySettings() {
     text("Height: " + u1.getFtInch(), width/2+30, 143);
   }
 
-  //changeH.drawButton();
-
-  //displayNumPad();
+  //draw input number pad
+  noFill();
+  displayNumPad();
 }
 
-//displays the history
+//displays the history/visualisation
+//SCREEN 5
 void displayHistory() {
   //top side of mirror
   textSize(fontSize+6);
   text("Welcome to your history, " + u1.name + "!", 30, 50);
   textSize(fontSize);
   text("Here is your current progress.", 30, 83);
-  
+
+  //display the visualisation at the top
   drawVisualisation();
-  
+
   //right hand side of mirror
   textSize(fontSize);
-  
-  //display weight
-  float yPos = 260;
-  if (isKg) {
-    text("Weight: " + u1.getKg() + "kg", xTxt-30, yPos);
-  } else {
-    text("Weight: " + u1.getLb() + "lbs", xTxt-30, yPos);
+
+  //display past weight
+  float yPos = 250;
+  text("Display results", xTxt-30, yPos);
+  text("for:", xTxt-30, yPos+30);
+  text(dateArr, 0, dateArr.length, xTxt-30, yPos+70);
+
+  //if the inputted date has no records then tell user that
+  if (!isValidDate) {
+    textSize(fontSize/1.5);
+    text("No record found, please try a different date", xTxt-30, yPos+100);
   }
 
-  //display bmi
-  text("BMI: " + u1.getBMI(), xTxt-30, yPos+40);
+  //show weight on that day
+  textSize(fontSize);
+  if (isKg) {
+    text("Weight: " + w + "kg", xTxt-30, yPos+150);
+  } else {
+    text("Weight: " + nf(u1.convertToLbs(float(w)), 0, 1) + "lbs", xTxt-30, yPos+150);
+  }
 
-  //display body fat %
-  text("Body fat: " + u1.getBodyFat(), xTxt-30, yPos+80);
+  //show bmi on that day
+  text("BMI: " + b, xTxt-30, yPos+190);
+
+  //show body fat % on that day
+  text("Body fat: " + bf + "%", xTxt-30, yPos+230);
+
+  //draw number pad
+  displayNumPad();
 }
 
 //if u sit on the welcome screen for longer than 5s, display will go to sleep
@@ -442,6 +543,7 @@ void displayDate() {
   int year = year();
   int hour = hour();
   int mins = minute();
+  //convert minutes into string
   String mins2 = "" + mins;
 
   //add 'st', 'nd', 'rd' or 'th' after day e.g. 21st, 22nd, 23rd, 24th
@@ -513,29 +615,29 @@ String sortMonth(int month) {
   return m;
 }
 
+//draw every button in number pad
 void displayNumPad() {
-  if (shouldNumPadDisplay) {
-    fill(0);
-    noStroke();
-    rectMode(CORNER);
-    rect(0, height/2, width, height/2-150);
-    for (int i = 0; i < numPadArr.length; i++) {
-      numPadArr[i].drawButton();
-    }
+  noStroke();
+  rectMode(CORNER);
+  rect(0, height/2, width, height/2-150);
+  for (int i = 0; i < numPadArr.length; i++) {
+    numPadArr[i].drawButton();
   }
 }
 
-void displayMotivational(){  
+//function to show a random motivational quote
+void displayMotivational() {  
   textSize(fontSize);
   text(motivationalQuotes[rand], 30, 153);
 }
 
-void drawVisualisation(){  
+//draw the visualisation
+void drawVisualisation() {  
   //drawing a line/flat ground
   float y = 210;
   strokeWeight(2);
   line(30, y, width-30, y);
-  
+
   //bezier curve for mountain
   float x = 370;
   beginShape();
@@ -543,7 +645,7 @@ void drawVisualisation(){
   bezierVertex(x+70, y, x+80, y-85, width-30-((width-30-x)/2), 120);
   bezierVertex(x+140, y-110, x+150, y, width-30, y);
   endShape();
-  
+
   //quadratic curves for mountain snow
   fill(255);
   beginShape();
@@ -553,15 +655,15 @@ void drawVisualisation(){
   quadraticVertex(x+152, y-43, x+139, y-65);
   quadraticVertex(width-30-((width-30-x)/2)+8, 93, x+81, y-65);
   endShape();
-  
+
   //create and draw checkpoint flags
   Flag[] flagArr = new Flag[5];
   int[] flagX = {120, 180, 240, 300, 360};
-  for(int i = 0; i < flagArr.length; i++){
+  for (int i = 0; i < flagArr.length; i++) {
     flagArr[i] = new Flag(flagX[i], int(y));
     flagArr[i].drawFlag();
   }
-  
+
   //draw end goal flag
   line(width-30-((width-30-x)/2)+8, 118, width-30-((width-30-x)/2)+8, 120-35);
   fill(255);

@@ -77,7 +77,9 @@ boolean isValidDate = true;
 
 //TODO: think of something better
 int rand;
-String[] motivationalQuotes = {"Eat healthy", "You can do it lol"};
+String[] motivationalQuotes = {"Motivational quote 1", "Motivational quote 2",
+                               "Motivational quote 3", "Motivational quote 4",
+                               "Motivational quote 5"};
 
 void setup() {
   //set size of display/sketch

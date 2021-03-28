@@ -1,0 +1,67 @@
+//import HX711 library (ADC for load cells)
+//should probably take advantage of library's power_up() and power_down() functions
+//since our scale is battery powered too
+#include "HX711.h"
+
+//need to define calibration factor
+//this can be obtained from running another piece of code from
+//https://www.instructables.com/Arduino-Bathroom-Scale-With-50-Kg-Load-Cells-and-H/
+//calibrate in kg
+
+//variables
+HX711 scale;
+
+//constants for load cell input & load cell output
+const LOAD_CELL_OUTPUT = //pin number (dt or dout)
+const LOAD_CELL_CLOCK = //pin number (sck)
+
+void setup(){
+	//initialise scale
+	scale.begin(LOAD_CELL_OUTPUT, LOAD_CELL_CLOCK);
+
+	//probably setup wifi connection or something here
+}
+
+void loop(){
+	/*
+
+		should the scale weight for john to stand on the scale to take measurements
+		or should the scale wait for input from the mirror to tell scale to take measurements?
+		should john verify whether he has taken a measurement or not?
+		- what if he just stands on it briefly cos it happens to be in the way?
+
+	*/
+
+	//wait for john to stand on the scale (while loop probably)
+	//while waiting, check for pressure on scale (is john standing on the scale?)
+	//if the scale is ready to measure & there is pressure on the scale then weigh john
+	//((probably not 0 but it will do for now))
+	if(scale.is_ready() && load cell pressure > 0){
+		//call function to get john's weight
+		weight = weighUser();
+
+		//call function to get john's body fat %
+		bodyfat = measureBodyFat();
+
+		//call function to send weight & body fat % to mirror/Processing
+		sendMeasurements();
+	}
+}
+
+//may want to consider a timer
+//to give user time to stand properly on scale
+//or have timer timeout once reading becomes stable
+float weighUser(){
+	float w = scale.read();
+	return w;
+}
+
+float measureBodyFat(){
+	float b;
+	//b = ((do stuff to measure body fat))
+	return b;
+}
+
+void sendMeasurements(){
+	//send weight & bodyfat
+}

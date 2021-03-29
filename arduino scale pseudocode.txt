@@ -1,67 +1,97 @@
 //import HX711 library (ADC for load cells)
+//use https://github.com/bogde/HX711/blob/master/src/HX711.cpp
+//to understand what functions are in the hx711 library
 //should probably take advantage of library's power_up() and power_down() functions
 //since our scale is battery powered too
 #include "HX711.h"
 
-//need to define calibration factor
-//this can be obtained from running another piece of code from
+//import wifi module library
+//using ESP32 module for wifi
+//use https://randomnerdtutorials.com/esp32-useful-wi-fi-functions-arduino/
+//or https://www.arduino.cc/en/Reference/WiFi
+//to understand functions in the library
+#include <WiFi.h>
+
+//need to define calibration factor for scale
+//this can be obtained from running a separate piece of code from
 //https://www.instructables.com/Arduino-Bathroom-Scale-With-50-Kg-Load-Cells-and-H/
 //calibrate in kg
 
 //variables
 HX711 scale;
+const char* ssid = "network_ssid"; //network name to connect to
+const char* password = "network_password"; //network's password
+WiFiClient client;
+IPAddress server(000, 000, 00, 0); //put ip address of laptop server in brackets here
 
 //constants for load cell input & load cell output
-const LOAD_CELL_OUTPUT = //pin number (dt or dout)
+const LOAD_CELL_OUTPUT = //pin number (dt or dout) (look up datasheet for HX711 part)
 const LOAD_CELL_CLOCK = //pin number (sck)
 
 void setup(){
+	//set up serial monitor
+	Serial.begin(9600);
+
 	//initialise scale
 	scale.begin(LOAD_CELL_OUTPUT, LOAD_CELL_CLOCK);
 
-	//probably setup wifi connection or something here
+	//connect to network
+	//if we were doing this properly we'd probably have to consider
+	//what happens if connection is lost and reconnecting
+	//idk if this is enough to cover it otherwise why
+	//are there functions for reconnecting
+	WiFi.begin(ssid, password);
+
+	//wait until wifi successfully connects
+	while(WiFi.status() != WL_CONNECTED){
+		Serial.println("not connected to network");
+	}
+
+	//connect to port 3000
+	client.connect(server, 3000);
 }
 
 void loop(){
-	/*
+	//wait for server (mirror) to tell scale to do something
+	while(client.available()){
+		//check if there are things sent from server
+		char a = client.read();
 
-		should the scale weight for john to stand on the scale to take measurements
-		or should the scale wait for input from the mirror to tell scale to take measurements?
-		should john verify whether he has taken a measurement or not?
-		- what if he just stands on it briefly cos it happens to be in the way?
+		//if server tells scale to do something
+		//break out of while loop
+		break;
+	}
 
-	*/
-
-	//wait for john to stand on the scale (while loop probably)
-	//while waiting, check for pressure on scale (is john standing on the scale?)
-	//if the scale is ready to measure & there is pressure on the scale then weigh john
-	//((probably not 0 but it will do for now))
-	if(scale.is_ready() && load cell pressure > 0){
+	//check if the scale is ready to measure & there is pressure/
+	//user is standing on the scale. weigh user if yes
+	if(scale.is_ready() && load cell reading > 0){
 		//call function to get john's weight
-		weight = weighUser();
+		long weight = weighUser();
 
 		//call function to get john's body fat %
-		bodyfat = measureBodyFat();
+		long bodyfat = measureBodyFat();
 
 		//call function to send weight & body fat % to mirror/Processing
-		sendMeasurements();
+		sendMeasurements(weight, bodyfat);
 	}
 }
 
 //may want to consider a timer
 //to give user time to stand properly on scale
 //or have timer timeout once reading becomes stable
-float weighUser(){
-	float w = scale.read();
+long weighUser(){
+	long w = scale.read();
 	return w;
 }
 
-float measureBodyFat(){
-	float b;
+long measureBodyFat(){
+	long b;
 	//b = ((do stuff to measure body fat))
 	return b;
 }
 
-void sendMeasurements(){
+void sendMeasurements(long w, long b){
 	//send weight & bodyfat
+	client.print(w);
+	client.print(b);
 }

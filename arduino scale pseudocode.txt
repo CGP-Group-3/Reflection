@@ -22,7 +22,7 @@ HX711 scale;
 const char* ssid = "network_ssid"; //network name to connect to
 const char* password = "network_password"; //network's password
 WiFiClient client;
-IPAddress server(000, 000, 00, 0); //put ip address of laptop server in brackets here
+IPAddress server(000, 000, 00, 0); //put ip address of computer/mirror server in brackets here
 
 //constants for load cell input & load cell output
 const LOAD_CELL_OUTPUT = //pin number (dt or dout) (look up datasheet for HX711 part)

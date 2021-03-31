@@ -13,11 +13,15 @@ class Button{
     h = tempH;
   }
   
+  //function to change which screen to show
   void hoverButton(int s){
+    //boolean to check if mouse is over the button
     boolean isOnButton = mouseX > x-w/2 && mouseX < x+w/2
                          && mouseY > y-h/2 && mouseY < y+h/2;
     
-    if(isOnButton){
+    //if the mouse is over the button and the mouse is being pressed
+    //change the screen to whatever screen number was passed as the argument
+    if(isOnButton && mousePressed){
       state = s;
     }
   }

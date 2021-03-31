@@ -1,13 +1,10 @@
 /*
   to-do:
  - get timeout to work (timeout is not implemented well - only works once)
- - enable double tap
- - positioning of settings buttons
- - way to input height
- - input name
+ - way to input height (low priority)
+ - input name (low priority)
  - motivational quote
  - goals
- - create boolean active for each button, provide feedback for user when clicking
  */
 
 //buttons for settings, history & control ("home")
@@ -24,9 +21,6 @@ RectButton toggleLb;
 RectButton fontPlus;
 RectButton fontMinus;
 
-//button for changing height, allows john to input new height
-//RectButton changeH;
-
 //variable to store screen state
 int state = 1;
 
@@ -40,7 +34,9 @@ int fontSize = 24;
 //whether weight is kg or lbs
 //whether height is cm or ft
 boolean isKg = true;
+boolean isLb = false;
 boolean isCm = true;
+boolean isFt = false;
 
 //user 1 (john)
 User u1;
@@ -77,9 +73,18 @@ boolean isValidDate = true;
 
 //TODO: think of something better
 int rand;
-String[] motivationalQuotes = {"Motivational quote 1", "Motivational quote 2",
-                               "Motivational quote 3", "Motivational quote 4",
-                               "Motivational quote 5"};
+String[] motivationalQuotes = {"Good job John! Remember to drink water today.", 
+  "Nice progress this week! Keep going!", 
+  "Motivational quote 3", 
+  "Motivational quote 4", 
+  "Motivational quote 5"};
+
+PImage backspace_w;
+PImage confirm_w;
+PImage backspace_b;
+PImage confirm_b;
+
+float barX;
 
 void setup() {
   //set size of display/sketch
@@ -89,6 +94,12 @@ void setup() {
   int x = 100;
   int y = 90;
   int w = 150;
+
+  //loading images
+  backspace_w = loadImage("images/backspace_white.png");
+  confirm_w = loadImage("images/tick_white.png");
+  backspace_b = loadImage("images/backspace_black.png");
+  confirm_b = loadImage("images/tick_black.png");
 
   //instantiating buttons
   settingsBtn = new RectButton(x, y, w, 40, "Settings", 42, 8);
@@ -103,6 +114,8 @@ void setup() {
 
   //mock up data for when john is measuring his weight
   mockData();
+
+  barX = records.getRowCount()-2;
 
   //set rand to a random number
   //used for showing a random quote when he visits the dashboard
@@ -121,8 +134,10 @@ void setup() {
 
   //instantiating num pad buttons 0, enter and delete
   numPadArr[0] = new RectButton(xTxt+60, height/9*7.1, 40, 40, labelArr[0], 8, 10);
-  numPadArr[numPadArr.length-2] = new RectButton(xTxt+120, height/9*7.1, 40, 40, labelArr[numPadArr.length-2], 8, 10);
-  numPadArr[numPadArr.length-1] = new RectButton(xTxt, height/9*7.1, 40, 40, labelArr[numPadArr.length-1], 8, 10);
+  numPadArr[numPadArr.length-2] = new RectButton(xTxt+120, height/9*7.1, 40, 40, 
+    labelArr[numPadArr.length-2], 8, 10, confirm_w, confirm_b);
+  numPadArr[numPadArr.length-1] = new RectButton(xTxt, height/9*7.1, 40, 40, 
+    labelArr[numPadArr.length-1], 8, 10, backspace_w, backspace_b);
 }
 
 void draw() {
@@ -151,12 +166,13 @@ void mockData() {
 
   //add data to records table
   TableRow newest = records.addRow();
+  newest.setInt("id", records.getRowCount());
   newest.setString("date", day() + "/" + month() + "/" + year());
   newest.setFloat("weight", wRand);
   newest.setFloat("bmi", tempBMI);
   newest.setFloat("bodyfat", bodyFatRand);
 
-  println("date : " + day() + "/" + month() + "/" + year() + "weight difference: " + u1.getWeightDiff() + ", "
+  println("date : " + day() + "/" + month() + "/" + year() + ", weight difference: " + u1.getWeightDiff() + ", "
     + "bmi difference: " + u1.getBMIDiff() + ", "
     + "body fat difference: " + u1.getBodyFatDiff());
 
@@ -175,8 +191,8 @@ void displayScreen() {
   //4 is settings
   //5 is history
   if (state == 0) {
-    displayOff();
-    wakeDisplay();
+    //displayOff();
+    //wakeDisplay();
   } else if (state == 1) {
     displayWelcome();
     //timeoutDisplay();
@@ -211,15 +227,19 @@ void mouseReleased() {
     //toggle height unit
     if (isOnCm) {
       isCm = true;
+      isFt = false;
     } else if (isOnFt) {
       isCm = false;
+      isFt = true;
     }
 
     //toggle weight unit
     if (isOnKg) {
       isKg = true;
+      isLb = false;
     } else if (isOnLb) {
       isKg = false;
+      isLb = true;
     }
 
     //if mouse if over font increase/decrease button
@@ -230,12 +250,12 @@ void mouseReleased() {
 
     //increase font size
     if (isOnPlus && fontSize <= 24) {
-      fontSize += 4;
+      fontSize += 2;
     }
 
     //decrease font size
     if (isOnMinus && fontSize >= 24) {
-      fontSize -= 4;
+      fontSize -= 2;
     }
   }
 
@@ -274,8 +294,8 @@ void mouseReleased() {
           count++;
           //if after the increment, the contents of that index is a slash,
           //increment counter again to skip over the slash
-          if(dateArr[count] == '/'){
-            count++; 
+          if (dateArr[count] == '/') {
+            count++;
           }
           //set date to the number of the button
           //have to set condition to not accept the enter key as otherwise it will
@@ -302,9 +322,12 @@ void mouseReleased() {
   }
 }
 
-//what to display when screen/display is off
-//(nothing, display nothing)
-void displayOff() {
+void mouseDragged() {
+  if (state == 5) {
+    if (mouseX > 30 && mouseX < width-30) {
+      barX = map(mouseX, 30, width-30, 0, records.getRowCount()-1);
+    }
+  }
 }
 
 //this is shown when john stands on the mat
@@ -386,9 +409,6 @@ void displayDisplay() {
   //show motivational quotes
   displayMotivational();
 
-  //display user profile
-  u1.displayUserProfile();
-
   //3 display boxes on the right hand side
   for (int i= 250; i<=610; i=i+180) {
     noFill();
@@ -400,7 +420,7 @@ void displayDisplay() {
   if (isKg) {
     text(u1.getKg() + "kg", xTxt, 260);
     textSize(fontSize/1.6);
-    text(u1.getWeightDiff() + " kg", xTxt, 280);
+    text(u1.getWeightDiff() + "kg", xTxt, 280);
   } else {
     text(u1.getLb() + "lbs", xTxt, 260);
     textSize(fontSize/1.6);
@@ -426,13 +446,12 @@ void displayDisplay() {
 //SCREEN 4
 void displaySettings() {
   //instantiate buttons located in the settings
-  toggleCm = new RectButton(width/3+10, 135, 50, 35, "cm", 17, 7);
-  toggleFt = new RectButton(width/3+70, 135, 50, 35, "ft", 10, 7);
-  toggleKg = new RectButton(width/3+10, 186, 50, 35, "kg", 15, 8);
-  toggleLb = new RectButton(width/3+70, 186, 50, 35, "lb", 10, 8);
-  fontPlus = new RectButton(width/3+70, 84, 50, 35, "+", 9, 8);
-  fontMinus = new RectButton(width/3+10, 84, 50, 35, "-", 7.5, 8);
-  //changeH = new RectButton(width/2-45, height/7*2, 140, 40, "change", 35, 8);
+  toggleCm = new RectButton(width/3+25, 135, 50, 35, "cm", 17, 7);
+  toggleFt = new RectButton(width/3+85, 135, 50, 35, "ft", 10, 7);
+  toggleKg = new RectButton(width/3+25, 186, 50, 35, "kg", 15, 8);
+  toggleLb = new RectButton(width/3+85, 186, 50, 35, "lb", 10, 8);
+  fontPlus = new RectButton(width/3+85, 84, 50, 35, "+", 9, 8);
+  fontMinus = new RectButton(width/3+25, 84, 50, 35, "-", 7.5, 8);
 
   //system settings
   textSize(fontSize+6);
@@ -448,15 +467,15 @@ void displaySettings() {
   text("Height units", 30, 143);
 
   //display height unit switch button
-  toggleCm.drawButton();
-  toggleFt.drawButton();
+  toggleCm.drawButton(isCm);
+  toggleFt.drawButton(isFt);
 
   //weight units
   text("Weight units", 30, 193);
 
   //display weight unit switch button
-  toggleKg.drawButton();
-  toggleLb.drawButton();
+  toggleKg.drawButton(isKg);
+  toggleLb.drawButton(isLb);
 
   //personal settings
   textSize(fontSize+6);
@@ -472,53 +491,56 @@ void displaySettings() {
   }
 
   //draw input number pad
-  noFill();
-  displayNumPad();
+  //noFill();
+  //displayNumPad();
 }
 
 //displays the history/visualisation
 //SCREEN 5
 void displayHistory() {
   //top side of mirror
+  fill(255);
   textSize(fontSize+6);
   text("Welcome to your history, " + u1.name + "!", 30, 50);
   textSize(fontSize);
-  text("Here is your current progress.", 30, 83);
+  text("Drag the pointer to see past measurements.", 30, 81);
 
   //display the visualisation at the top
-  drawVisualisation();
+  drawVisualisation(records.getInt(int(barX), "id"));
+  drawBMI();
 
-  //right hand side of mirror
-  textSize(fontSize);
+  ////right hand side of mirror
+  //textSize(fontSize);
 
-  //display past weight
-  float yPos = 250;
-  text("Display results", xTxt-30, yPos);
-  text("for:", xTxt-30, yPos+30);
-  text(dateArr, 0, dateArr.length, xTxt-30, yPos+70);
+  ////display past weight
+  //float yPos = 250;
+  //text("Display results", xTxt-30, yPos);
+  //text("for:", xTxt-30, yPos+30);
+  //text(dateArr, 0, dateArr.length, xTxt-30, yPos+70);
 
-  //if the inputted date has no records then tell user that
-  if (!isValidDate) {
-    textSize(fontSize/1.5);
-    text("No record found, please try a different date", xTxt-30, yPos+100);
-  }
+  ////if the inputted date has no records then tell user that
+  //if (!isValidDate) {
+  //  textSize(fontSize/1.5);
+  //  text("No record found, ", xTxt-30, yPos+95);
+  //  text("please try a different day.", xTxt-32, yPos+115);
+  //}
 
-  //show weight on that day
-  textSize(fontSize);
-  if (isKg) {
-    text("Weight: " + w + "kg", xTxt-30, yPos+150);
-  } else {
-    text("Weight: " + nf(u1.convertToLbs(float(w)), 0, 1) + "lbs", xTxt-30, yPos+150);
-  }
+  ////show weight on that day
+  //textSize(fontSize);
+  //if (isKg) {
+  //  text("Weight: " + w + "kg", xTxt-30, yPos+150);
+  //} else {
+  //  text("Weight: " + nf(u1.convertToLbs(float(w)), 0, 1) + "lbs", xTxt-30, yPos+150);
+  //}
 
-  //show bmi on that day
-  text("BMI: " + b, xTxt-30, yPos+190);
+  ////show bmi on that day
+  //text("BMI: " + b, xTxt-30, yPos+190);
 
-  //show body fat % on that day
-  text("Body fat: " + bf + "%", xTxt-30, yPos+230);
+  ////show body fat % on that day
+  //text("Body fat: " + bf + "%", xTxt-30, yPos+230);
 
   //draw number pad
-  displayNumPad();
+  //displayNumPad();
 }
 
 //if u sit on the welcome screen for longer than 5s, display will go to sleep
@@ -531,10 +553,10 @@ void displayHistory() {
 //  }
 //}
 
-//turn display back on
-void wakeDisplay() {
-  controlBtn.hoverButton(1);
-}
+////turn display back on
+//void wakeDisplay() {
+//  controlBtn.hoverButton(state);
+//}
 
 //display the time and date in top left
 void displayDate() {
@@ -619,12 +641,12 @@ String sortMonth(int month) {
 
 //draw every button in number pad
 void displayNumPad() {
-  noStroke();
-  rectMode(CORNER);
-  rect(0, height/2, width, height/2-150);
-  for (int i = 0; i < numPadArr.length; i++) {
+  for (int i = 0; i < numPadArr.length-2; i++) {
     numPadArr[i].drawButton();
   }
+
+  numPadArr[numPadArr.length-2].drawButton(25, 25);
+  numPadArr[numPadArr.length-1].drawButton(25, 25);
 }
 
 //function to show a random motivational quote
@@ -634,44 +656,178 @@ void displayMotivational() {
 }
 
 //draw the visualisation
-void drawVisualisation() {  
-  //drawing a line/flat ground
-  float y = 210;
-  strokeWeight(2);
-  line(30, y, width-30, y);
+//void drawVisualisation(){
+////draw bar
+//float y = 180;
+//rectMode(CORNER);
+//noStroke();
+//fill(184, 51, 63);
+//  rect(30, y, width-60, 20, 5);
 
-  //bezier curve for mountain
-  float x = 370;
-  beginShape();
-  vertex(x, y);
-  bezierVertex(x+70, y, x+80, y-85, width-30-((width-30-x)/2), 120);
-  bezierVertex(x+140, y-110, x+150, y, width-30, y);
-  endShape();
+//  float yellowX = map(15, 15, 35, 30, width-60);
+//  float yellowW = map(30, 15, 35, 30, width-60);
+//  fill(237, 214, 36);
+//  rect(yellowX, y, yellowW-yellowX, 20, 5);
 
-  //quadratic curves for mountain snow
+//  float greenX = map(18.5, 15, 35, 30, width-60);
+//  float greenW = map(24.9, 15, 35, 30, width-60);
+//  fill(17, 194, 26);
+//  rect(greenX, y, greenW-greenX, 20, 5);
+//  rectMode(CENTER);
+
+////draw marker
+//float markerX = map(u1.bmi, 15, 35, 30, width-60);
+//float markerY = 140;
+//int r = 50;
+//fill(255);
+//ellipse(markerX, markerY, r, r);
+//triangle(markerX-r/2+1, markerY+7, markerX, markerY+r, markerX+r/2-1, markerY+7);
+//fill(26);
+//  textSize(fontSize-4);
+//  text(u1.bmi, markerX-27, markerY+8);
+
+//  //reset to avoid impact on other elements being drawn
+//  textSize(fontSize);
+//  fill(255);
+//}
+
+void drawVisualisation() {
+  //draw bar
+  float y = 180;
+  rectMode(CORNER);
+  stroke(255);
+  noFill();
+  rect(30, y, width-60, 20, 5);
+
+  //draw marker
+  int num = records.getRowCount();
+  float markerX = map(barX, 0, num-1, 30, width-30);
+  float markerY = 140;
+  int r = 50;
   fill(255);
-  beginShape();
-  vertex(x+81, y-65);
-  quadraticVertex(x+75, y-43, x+98, y-55);
-  quadraticVertex(x+112, y-35, x+125, y-55);
-  quadraticVertex(x+152, y-43, x+139, y-65);
-  quadraticVertex(width-30-((width-30-x)/2)+8, 93, x+81, y-65);
-  endShape();
+  ellipse(markerX, markerY, r, r);
+  triangle(markerX-r/2+1, markerY+7, markerX, markerY+r, markerX+r/2-1, markerY+7);
 
-  //create and draw checkpoint flags
-  Flag[] flagArr = new Flag[5];
-  int[] flagX = {120, 180, 240, 300, 360};
-  for (int i = 0; i < flagArr.length; i++) {
-    flagArr[i] = new Flag(flagX[i], int(y));
-    flagArr[i].drawFlag();
+  //right hand side of mirror
+  textSize(fontSize);
+
+  //display past weight
+  float yPos = 250;
+  text("Display results", xTxt-30, yPos);
+  text("for:", xTxt-30, yPos+30);
+  text(dateArr, 0, dateArr.length, xTxt-30, yPos+70);
+
+  //show weight on that day
+  textSize(fontSize);
+  if (isKg) {
+    text("Weight: " + w + "kg", xTxt-30, yPos+150);
+  } else {
+    text("Weight: " + nf(u1.convertToLbs(float(w)), 0, 1) + "lbs", xTxt-30, yPos+150);
   }
 
-  //draw end goal flag
-  line(width-30-((width-30-x)/2)+8, 118, width-30-((width-30-x)/2)+8, 120-35);
-  fill(255);
+  //show bmi on that day
+  text("BMI: " + b, xTxt-30, yPos+190);
+
+  //show body fat % on that day
+  text("Body fat: " + bf + "%", xTxt-30, yPos+230);
+}
+
+void drawVisualisation(int a) {
+  //draw bar
+  float y = 190;
   rectMode(CORNER);
-  rect(width-30-((width-30-x)/2)+8, 120-35, 20, 15);
-  noFill();
-  rectMode(CENTER);
+  stroke(255);
+  strokeWeight(2);
+  line(30, y, width-30, y);
+  line(30, y-8, 30, y+8);
+  line(width-30, y-8, width-30, y+8);
   strokeWeight(1);
+
+  //draw marker
+  int num = records.getRowCount();
+  float markerX = map(barX, 0, num-1, 30, width-30);
+  float markerY = 140;
+  int r = 50;
+  fill(255);
+  ellipse(markerX, markerY, r, r);
+  triangle(markerX-r/2+1, markerY+7, markerX, markerY+r, markerX+r/2-1, markerY+7);
+
+  //right hand side of mirror
+  textSize(fontSize);
+
+  //display past weight
+  float yPos = 250;
+  text("Displaying ", xTxt-30, yPos);
+  text("result for:", xTxt-30, yPos+30);
+  text(records.getString(a, "date"), xTxt-16, yPos+85);
+
+  //show weight on that day
+  textSize(fontSize);
+  if (isKg) {
+    text("Weight: " + nf(records.getFloat(a, "weight"), 0, 1) + "kg", xTxt-30, yPos+150);
+  } else {
+    text("Weight: " + nf(u1.convertToLbs(records.getFloat(a, "weight")), 0, 1) + "lbs", xTxt-30, yPos+150);
+  }
+
+  //show bmi on that day
+  text("BMI: " + nf(records.getFloat(a, "bmi"), 0, 1), xTxt-30, yPos+190);
+
+  //show body fat % on that day
+  text("Body fat: " + nf(records.getFloat(a, "bodyfat"), 0, 1) + "%", xTxt-30, yPos+230);
+
+  //reset
+  fill(255);
+  stroke(255);
+  textSize(fontSize);
+}
+
+void drawBMI() {
+  float yPos = 250;
+  
+  //draw bar for bmi
+  textSize(fontSize-2);
+  text("Current BMI: ", xTxt-30, yPos+340);
+
+  float bmiY = yPos + 380;
+  float bmiW = 180;
+  rectMode(CORNER);
+  noStroke();
+  fill(184, 51, 63);
+  rect(xTxt-30, bmiY, bmiW, 10, 5);
+
+  float yellowX = map(15, 15, 35, xTxt-30, xTxt-30+bmiW);
+  float yellowW = map(30, 15, 35, xTxt-30, xTxt-30+bmiW);
+  fill(237, 214, 36);
+  rect(yellowX, bmiY, yellowW-yellowX, 10, 5);
+
+  float greenX = map(18.5, 15, 35, xTxt-30, xTxt-30+bmiW);
+  float greenW = map(24.9, 15, 35, xTxt-30, xTxt-30+bmiW);
+  fill(17, 194, 26);
+  rect(greenX, bmiY, greenW-greenX, 10, 2);
+  rectMode(CENTER);
+
+  //draw bmi marker
+  float bmiMarkerX = map(u1.bmi, 15, 35, xTxt-30, xTxt-30+bmiW);
+  float bmiMarkerY = bmiY - 22;
+  int bmiR = 25;
+  fill(255);
+  //ellipse(bmiMarkerX, bmiMarkerY, bmiR, bmiR);
+  triangle(bmiMarkerX-bmiR/2+1, bmiMarkerY+7, bmiMarkerX, bmiMarkerY+bmiR, bmiMarkerX+bmiR/2-1, bmiMarkerY+7);
+
+  textSize(fontSize-4);
+  text("A healthy weight", xTxt-30, yPos+415);
+  text("range for you: ", xTxt-30, yPos+440);
+  float m = float(u1.cm) / 100;
+  float lowerBound = 18.5 * sq(m);
+  float upperBound = 24.9 * sq(m);
+  if (isKg) {
+    text(nf(lowerBound, 0, 1) + "kg ~ " + nf(upperBound, 0, 1) + "kg", xTxt-30, yPos+470);
+  } else {
+    text(nf(u1.convertToLbs(lowerBound), 0, 1) + "lbs ~ " + nf(u1.convertToLbs(upperBound), 0, 1) + "lbs", xTxt-30, yPos+470);
+  }
+
+  //reset
+  fill(255);
+  stroke(255);
+  textSize(fontSize);
 }

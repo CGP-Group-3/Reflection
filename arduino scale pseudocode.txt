@@ -86,12 +86,16 @@ long weighUser(){
 
 long measureBodyFat(){
 	long b;
-	//b = ((do stuff to measure body fat))
+	//perform bioelectrical impedance analysis
+	//send short & small current to electrodes under 1 foot/on one side of scale
+	//wait for current to return via other electrodes on other side of scale
+	//use Ohm's Law to calculate resistance
+	//store resistance in variable b
 	return b;
 }
 
 void sendMeasurements(long w, long b){
-	//send weight & bodyfat
+	//send weight & bodyfat to server
 	client.print(w);
 	client.print(b);
 }

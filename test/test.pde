@@ -5,7 +5,8 @@
  */
 
 //buttons for settings, history & control ("home")
-RectButton settingsBtn, historyBtn;
+RectButton settingsBtn;
+RectButton historyBtn;
 CircButton controlBtn;
 
 //buttons for toggling between units (cm & ft and kg & lbs)
@@ -50,8 +51,7 @@ int count = 0;
 //variable to store random number
 //to decide which quote to show
 int rand;
-String[] motivationalQuotes = {"Good job, " + u1.name + "! Remember to drink water today.", 
-  "Nice progress this week! Keep going!"};
+String[] motivationalQuotes = new String[2];
 
 //variable to help draw visualisation
 //for timeline
@@ -73,6 +73,9 @@ void setup() {
 
   //instantiate u1
   u1 = new User("John", 178, 90, 25);
+  
+  motivationalQuotes[0] = "Good job, " + u1.name + "! Remember to drink water today.";
+  motivationalQuotes[1] = "Nice progress this week! Keep going!";
 
   //loads records.csv from folder
   records = loadTable("records.csv", "header");
@@ -107,7 +110,7 @@ void mockData() {
   float wRand = random(88, 94);
   float bodyFatRand = random(22, 26);
   float tempBMI = u1.calculateBMI(u1.cm, wRand);
-  //println("weight:" + wRand + ", body fat: " + bodyFatRand + ", bmi: " + tempBMI);
+  println("weight:" + wRand + ", body fat: " + bodyFatRand + ", bmi: " + tempBMI);
 
   //update john's current measurements
   u1.setKg(wRand);
@@ -132,11 +135,11 @@ void mockData() {
   newest.setFloat("bmi", tempBMI);
   newest.setFloat("bodyfat", bodyFatRand);
 
-  //println("date : " + day() + "/" + month() + "/" + year() + ", weight difference: " + u1.getWeightDiff() + ", "
-  //  + "bmi difference: " + u1.getBMIDiff() + ", "
-  //  + "body fat difference: " + u1.getBodyFatDiff());
+  println("date : " + day() + "/" + month() + "/" + year() + ", weight difference: " + u1.getWeightDiff() + ", "
+    + "bmi difference: " + u1.getBMIDiff() + ", "
+    + "body fat difference: " + u1.getBodyFatDiff());
 
-  //println("in lbs: " + u1.convertToLbs(u1.dW));
+  println("in lbs: " + u1.convertToLbs(u1.dW));
 
   //save the new row to the csv
   saveTable(records, "records.csv");
@@ -494,8 +497,8 @@ String sortMonth(int month) {
 
 //function to show a random motivational quote
 void displayMotivational() {  
-  textSize(fontSize);
-  text(motivationalQuotes[rand], 30, 153);
+  textSize(fontSize-2);
+  text(motivationalQuotes[rand], 30, 148);
 }
 
 void drawVisualisation(int a) {

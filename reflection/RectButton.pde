@@ -1,4 +1,5 @@
 class RectButton extends Button {
+  //properties for button text
   String label;
   float labelX;
   float labelY;
@@ -12,6 +13,7 @@ class RectButton extends Button {
   }
   
   //draws a rectangle and writes the button name/label on it
+  //will invert colour of button to show feedback to user
   void drawButton(){
     boolean isOnButton = mouseX > x-w/2 && mouseX < x+w/2
                          && mouseY > y-h/2 && mouseY < y+h/2;

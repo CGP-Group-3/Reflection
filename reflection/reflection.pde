@@ -1,12 +1,4 @@
-/*
-  to-do:
- - get timeout to work (timeout is not implemented well - only works once)
- - motivational quote
- */
-
-//buttons for settings, history & control ("home")
-RectButton settingsBtn;
-RectButton historyBtn;
+//button for control ("home")
 CircButton controlBtn;
 
 //buttons for toggling between units (cm & ft and kg & lbs)
@@ -61,19 +53,12 @@ void setup() {
   //set size of display/sketch
   size(600, 900);
 
-  //x, y & width for buttons
-  int x = 100;
-  int y = 90;
-  int w = 150;
-
-  //instantiating buttons
-  settingsBtn = new RectButton(x, y, w, 40, "Settings", 42, 8);
-  historyBtn = new RectButton(x+w+20, y, w, 40, "History", 40, 8);
+  //instantiating circle/home/main/control button
   controlBtn = new CircButton(width/2, height-80, 45, 45);
 
   //instantiate u1
   u1 = new User("John", 178, 90, 25);
-  
+
   motivationalQuotes[0] = "Good job, " + u1.name + "! Remember to drink water today.";
   motivationalQuotes[1] = "Nice progress this week! Keep going!";
 
@@ -155,7 +140,7 @@ void displayScreen() {
   //5 is history
   if (state == 0) {
     //displayOff();
-    //wakeDisplay();
+    //controlBtn.hoverButton(1);
   } else if (state == 1) {
     displayWelcome();
     //timeoutDisplay();
@@ -163,8 +148,8 @@ void displayScreen() {
     displayScanning();
   } else if (state == 3) {
     displayDisplay();
-    settingsBtn.hoverButton(4);
-    historyBtn.hoverButton(5);
+    //settingsBtn.hoverButton(4);
+    //historyBtn.hoverButton(5);
   } else if (state == 4) {
     displaySettings();
     controlBtn.hoverButton(3);
@@ -302,6 +287,15 @@ void displayScanning() {
 //displays the display/dashboard
 //SCREEN 3
 void displayDisplay() {
+  //variables to set x and y position of buttons and width of buttons
+  int x = 100;
+  int y = 90;
+  int w = 150;
+  
+  //creating settings and history buttons
+  RectButton settingsBtn = new RectButton(x, y, w, 40, "Settings", 42, 8);
+  RectButton historyBtn = new RectButton(x+w+20, y, w, 40, "History", 40, 8);
+  
   //change text size
   textSize(fontSize);
 
@@ -346,6 +340,9 @@ void displayDisplay() {
   textSize(fontSize/1.6);
   text(u1.getBMIDiff(), xTxt, 460);
   text(u1.getBodyFatDiff(), xTxt, 640);
+  
+  settingsBtn.hoverButton(4);
+  historyBtn.hoverButton(5);
 }
 
 //displays the settings

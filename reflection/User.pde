@@ -71,6 +71,8 @@ class User {
     bmi = (w/sq(m));
     return bmi;
   }
+  //BMI formula found from below, not altered in anyway
+  //Coulman, K. and Toran, S.S 2020, Body mass index may not be the best indicator of our health – how can we improve it?, The Conversation, viewed 5 April 2021, <https://theconversation.com/body-mass-index-may-not-be-the-best-indicator-of-our-health-how-can-we-improve-it-143155>
 
   //getter
   String getBodyFat() {

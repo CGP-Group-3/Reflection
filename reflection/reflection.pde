@@ -1,4 +1,4 @@
-//button for control ("home")
+//button for control ("home") //<>//
 CircButton controlBtn;
 
 //buttons for toggling between units (cm & ft and kg & lbs)
@@ -12,7 +12,7 @@ RectButton fontPlus;
 RectButton fontMinus;
 
 //variable to store screen state
-int state = 1;
+int state = 5;
 
 //x positioning of text at right hand side panel
 int xTxt=width+335;
@@ -70,7 +70,7 @@ void setup() {
 
   //set an initial value for barX for visualisation
   //should be most recent measurement
-  barX = records.getRowCount()-2;
+  barX = records.getRowCount()-1;
 
   //set rand to a random number
   //used for showing a random quote when he visits the dashboard
@@ -132,24 +132,17 @@ void mockData() {
 
 void displayScreen() {
   //conditional block to control which screen to display
-  //0 is off
   //1 is welcome
   //2 is scanning screen
   //3 is the dashboard
   //4 is settings
   //5 is history
-  if (state == 0) {
-    //displayOff();
-    //controlBtn.hoverButton(1);
-  } else if (state == 1) {
+  if (state == 1) {
     displayWelcome();
-    //timeoutDisplay();
   } else if (state == 2) {
     displayScanning();
   } else if (state == 3) {
     displayDisplay();
-    //settingsBtn.hoverButton(4);
-    //historyBtn.hoverButton(5);
   } else if (state == 4) {
     displaySettings();
     controlBtn.hoverButton(3);
@@ -212,10 +205,10 @@ void mouseDragged() {
   //when on history/visualisation page
   if (state == 5) {
     //if the mouse's x position is within the range of the line drawn on the screen
-    if (mouseX > 30 && mouseX < width-31) {
+    if (mouseX > 30 && mouseX < width-30) {
       //map the position to a record within the records.csv file
       //and assign it to barX to help draw the visualisation out
-      barX = map(mouseX, 30, width-30, 0, records.getRowCount()-2);
+      barX = map(mouseX, 30, width-30, 0, records.getRowCount());
     }
   }
 }
@@ -291,11 +284,11 @@ void displayDisplay() {
   int x = 100;
   int y = 90;
   int w = 150;
-  
+
   //creating settings and history buttons
   RectButton settingsBtn = new RectButton(x, y, w, 40, "Settings", 42, 8);
   RectButton historyBtn = new RectButton(x+w+20, y, w, 40, "History", 40, 8);
-  
+
   //change text size
   textSize(fontSize);
 
@@ -340,7 +333,7 @@ void displayDisplay() {
   textSize(fontSize/1.6);
   text(u1.getBMIDiff(), xTxt, 460);
   text(u1.getBodyFatDiff(), xTxt, 640);
-  
+
   settingsBtn.hoverButton(4);
   historyBtn.hoverButton(5);
 }
@@ -405,7 +398,7 @@ void displayHistory() {
   text("Drag the pointer to see past measurements.", 30, 81);
 
   //display the visualisations
-  int row = records.getInt(int(barX), "id");
+  int row = records.getInt(int(barX), "id") - 1;
   drawVisualisation(row);
   drawBMI(row);
   drawBodyFat(row);
@@ -516,7 +509,7 @@ void drawVisualisation(int a) {
 
   //draw marker on timeline
   int num = records.getRowCount();
-  float markerX = map(barX, 0, num-2, 30, width-30);
+  float markerX = map(barX, 0, num-1, 30, width-30);
   float markerY = 140;
   int r = 50;
   fill(255);
@@ -570,6 +563,8 @@ void drawBMI(int a) {
   float yellowW = map(30, 15, 35, xTxt-30, xTxt-30+bmiW);
   fill(237, 214, 36);
   rect(yellowX, bmiY, yellowW-yellowX, 10, 5);
+  //BMI ranges found from below, numbers used to map BMI range to Processing coordinate system
+  //Coulman, K. and Toran, S.S 2020, Body mass index may not be the best indicator of our health – how can we improve it?, The Conversation, viewed 5 April 2021, <https://theconversation.com/body-mass-index-may-not-be-the-best-indicator-of-our-health-how-can-we-improve-it-143155>
 
   //draw healthy bmi bar
   float greenX = map(18.5, 15, 35, xTxt-30, xTxt-30+bmiW);
@@ -577,6 +572,8 @@ void drawBMI(int a) {
   fill(17, 194, 26);
   rect(greenX, bmiY, greenW-greenX, 10, 2);
   rectMode(CENTER);
+  //BMI ranges found from below, numbers used to map BMI range to Processing coordinate system
+  //Coulman, K. and Toran, S.S 2020, Body mass index may not be the best indicator of our health – how can we improve it?, The Conversation, viewed 5 April 2021, <https://theconversation.com/body-mass-index-may-not-be-the-best-indicator-of-our-health-how-can-we-improve-it-143155>
 
   //draw bmi marker along the bar
   float markerX = map(records.getFloat(a, "bmi"), 15, 35, xTxt-30, xTxt-30+bmiW);
@@ -594,6 +591,8 @@ void drawBMI(int a) {
   float m = float(u1.cm) / 100;
   float lowerBound = 18.5 * sq(m);
   float upperBound = 24.9 * sq(m);
+  //BMI formula found from below, used to rearrange equation to find ideal weight from known values (BMI (from below source) and height of user)
+  //Coulman, K. and Toran, S.S. 2020, Body mass index may not be the best indicator of our health – how can we improve it?, The Conversation, viewed 5 April 2021, <https://theconversation.com/body-mass-index-may-not-be-the-best-indicator-of-our-health-how-can-we-improve-it-143155>
 
   //change ideal weight range according to lbs or kg setting
   if (isKg) {
@@ -612,7 +611,6 @@ void drawBodyFat(int a) {
   float yPos = 440;
 
   //draw bar for body fat %
-  //ranges from https://academic.oup.com/ajcn/article/72/3/694/4729363
   float bmiY = yPos + 250;
   float bmiW = 180;
 
@@ -628,13 +626,17 @@ void drawBodyFat(int a) {
   float yellowW = map(30, 0, 100, xTxt-30, xTxt-30+bmiW);
   fill(237, 214, 36);
   rect(yellowX, bmiY, yellowW-yellowX, 10, 5);
+  //numbers for ranges from below journal, used to ensure proportion of bar is correct when mapping from 0% ~ 100% range to Processing coordinates
+  //Gallagher, D., Heymsfield, S. B., Heo, M., Jebb, S. A., Murgatroyd P. R. and Sakamoto, Y. 2000, 'Healthy percentage body fat ranges: an approach for developing guidelines based on body mass index', The American Journal of Clinical Nutrition, vol. 72, viewed 5 April 2021, <https://academic.oup.com/ajcn/article/72/3/694/4729363>.
 
   //draw healthy section
   float greenX = map(13, 0, 100, xTxt-30, xTxt-30+bmiW);
-  float greenW = map(25, 0, 100, xTxt-30, xTxt-30+bmiW);
+  float greenW = map(24.9, 0, 100, xTxt-30, xTxt-30+bmiW);
   fill(17, 194, 26);
   rect(greenX, bmiY, greenW-greenX, 10, 2);
   rectMode(CENTER);
+  //numbers for ranges from below journal, used to ensure proportion of bar is correct when mapping from 0% ~ 100% range to Processing coordinates
+  //Gallagher, D., Heymsfield, S. B., Heo, M., Jebb, S. A., Murgatroyd P. R. and Sakamoto, Y. 2000, 'Healthy percentage body fat ranges: an approach for developing guidelines based on body mass index', The American Journal of Clinical Nutrition, vol. 72, viewed 5 April 2021, <https://academic.oup.com/ajcn/article/72/3/694/4729363>.
 
   //draw body fat % marker along bar
   float markerX = map(records.getFloat(a, "bodyfat"), 0, 100, xTxt-30, xTxt-30+bmiW);
@@ -649,6 +651,8 @@ void drawBodyFat(int a) {
   text("A healthy body ", xTxt-30, yPos+285);
   text("fat % range for you: ", xTxt-30, yPos+305);
   text("13% ~ 24.9%", xTxt-30, yPos+335);
+  //numbers for ranges from below journal, used to ensure proportion of bar is correct when mapping from 0% ~ 100% range to Processing coordinates
+  //Gallagher, D., Heymsfield, S. B., Heo, M., Jebb, S. A., Murgatroyd P. R. and Sakamoto, Y. 2000, 'Healthy percentage body fat ranges: an approach for developing guidelines based on body mass index', The American Journal of Clinical Nutrition, vol. 72, viewed 5 April 2021, <https://academic.oup.com/ajcn/article/72/3/694/4729363>.
 
   //reset to avoid ruining other parts of display
   fill(255);

@@ -1,15 +1,7 @@
 //import HX711 library (ADC for load cells)
-//use https://github.com/bogde/HX711/blob/master/src/HX711.cpp
-//to understand what functions are in the hx711 library
-//should probably take advantage of library's power_up() and power_down() functions
-//since our scale is battery powered too
 #include "HX711.h"
 
 //import wifi module library
-//using ESP32 module for wifi
-//use https://randomnerdtutorials.com/esp32-useful-wi-fi-functions-arduino/
-//or https://www.arduino.cc/en/Reference/WiFi
-//to understand functions in the library
 #include <WiFi.h>
 
 //need to define calibration factor for scale
@@ -36,10 +28,6 @@ void setup(){
 	scale.begin(LOAD_CELL_OUTPUT, LOAD_CELL_CLOCK);
 
 	//connect to network
-	//if we were doing this properly we'd probably have to consider
-	//what happens if connection is lost and reconnecting
-	//idk if this is enough to cover it otherwise why
-	//are there functions for reconnecting
 	WiFi.begin(ssid, password);
 
 	//wait until wifi successfully connects
@@ -57,9 +45,11 @@ void loop(){
 		//check if there are things sent from server
 		char a = client.read();
 
-		//if server tells scale to do something
+		//if server tells scale to weigh user then
 		//break out of while loop
-		break;
+		if(a == "weigh user"){
+			break;
+		}
 	}
 
 	//check if the scale is ready to measure & there is pressure/
@@ -76,9 +66,6 @@ void loop(){
 	}
 }
 
-//may want to consider a timer
-//to give user time to stand properly on scale
-//or have timer timeout once reading becomes stable
 long weighUser(){
 	long w = scale.read();
 	return w;

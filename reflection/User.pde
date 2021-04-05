@@ -19,47 +19,54 @@ class User {
     bodyfat = tempBodyFat;
   }
 
-  //getters
+  //get height in cm
   int getCm() {
     return cm;
   }
 
   //string together ft and inches
+  //get height in ft and inches
   String getFtInch() {
     convertToFtInch();
     return ft + "ft " + inch + "inches";
   }
 
+  //get weight in kg
   String getKg() {
     return nf(kg, 0, 1);
   }
 
+  //get weight in lb
   String getLb() {
     lbs = convertToLbs(kg);
     return "" + round(lbs);
   }
 
+  //get bmi
   String getBMI() {
     return nf(bmi, 0, 1);
   }
 
-  //functions to convert units
+  //function to convert ft and inches into cm
   int convertToCm() {
     int result = int(ft*30.48 + inch*2.54);
     return result;
   }
 
+  //convert cm to ft and inches
   int convertToFtInch() {
     ft = int(cm/30.48);
     inch = int(((cm/30.48)-ft) % 12 * 10);
     return ft;
   }
 
+  //convert lb to kg
   int convertToKg() {
     int result = int(lbs/2.205);
     return result;
   }
 
+  //convert kg to lb
   float convertToLbs(float w) {
     float result = w*2.205;
     return result;
@@ -72,43 +79,47 @@ class User {
     return bmi;
   }
   //BMI formula found from below, not altered in anyway
-  //Coulman, K. and Toran, S.S 2020, Body mass index may not be the best indicator of our health – how can we improve it?, The Conversation, viewed 5 April 2021, <https://theconversation.com/body-mass-index-may-not-be-the-best-indicator-of-our-health-how-can-we-improve-it-143155>
+  //Coulman, K. and Toran, S. S. 2020, Body mass index may not be the best indicator of our health – how can we improve it?, The Conversation, viewed 5 April 2021, <https://theconversation.com/body-mass-index-may-not-be-the-best-indicator-of-our-health-how-can-we-improve-it-143155>.
 
-  //getter
+  //get body fat
   String getBodyFat() {
     return nf(bodyfat, 0, 1) + "%";
   }
 
-  //setters
+  //set weight
   void setKg(float w) {
     kg = w;
   }
 
+  //set body fat
   void setBodyFat(float b) {
     bodyfat = b;
   }
 
+  //set bmi
   void setBMI(float b) {
     bmi = b;
   }
 
-  //calculate differences between last measurement and new measurement
+  //calculate difference between last measurement and new measurement (kg ver)
   void calculateWeightDiff() {
     int num = records.getRowCount();
     dW = kg - records.getFloat(num-2, "weight");
   }
 
+  //calculate difference between last measurement and new measurement (body fat % ver)
   void calculateBodyFatDiff() {
     int num = records.getRowCount();
     dBodyfat = bodyfat - records.getFloat(num-2, "bodyfat");
   }
 
+  //calculate difference between last measurement and new measurement (bmi ver)
   void calculateBMIDiff() {
     int num = records.getRowCount();
     dBMI = bmi - records.getFloat(num-2, "bmi");
   }
 
-  //more getters
+  //get weight difference between last measurement and new measurement
   String getWeightDiff() {
     String str;
 
@@ -131,6 +142,7 @@ class User {
     return str;
   }
 
+  //get body fat % difference between last measurement and new measurement
   String getBodyFatDiff() {
     String str;
 
@@ -145,6 +157,7 @@ class User {
     return str;
   }
 
+  //get bmi difference between last measurement and new measurement
   String getBMIDiff() {
     String str;
 

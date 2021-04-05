@@ -1,4 +1,4 @@
-//button for control ("home") //<>//
+//button for control/home //<>//
 CircButton controlBtn;
 
 //buttons for toggling between units (cm & ft and kg & lbs)
@@ -12,7 +12,7 @@ RectButton fontPlus;
 RectButton fontMinus;
 
 //variable to store screen state
-int state = 5;
+int state = 1;
 
 //x positioning of text at right hand side panel
 int xTxt=width+335;
@@ -95,7 +95,6 @@ void mockData() {
   float wRand = random(88, 94);
   float bodyFatRand = random(22, 26);
   float tempBMI = u1.calculateBMI(u1.cm, wRand);
-  println("weight:" + wRand + ", body fat: " + bodyFatRand + ", bmi: " + tempBMI);
 
   //update john's current measurements
   u1.setKg(wRand);
@@ -119,12 +118,6 @@ void mockData() {
   newest.setFloat("weight", wRand);
   newest.setFloat("bmi", tempBMI);
   newest.setFloat("bodyfat", bodyFatRand);
-
-  println("date : " + day() + "/" + month() + "/" + year() + ", weight difference: " + u1.getWeightDiff() + ", "
-    + "bmi difference: " + u1.getBMIDiff() + ", "
-    + "body fat difference: " + u1.getBodyFatDiff());
-
-  println("in lbs: " + u1.convertToLbs(u1.dW));
 
   //save the new row to the csv
   saveTable(records, "records.csv");
@@ -153,9 +146,9 @@ void displayScreen() {
 }
 
 void mouseReleased() {
-  //when on settings page...
+  //when on settings page
   if (state == 4) {
-    //...if mouse is over the cm/ft/kg/lb button...
+    //booleans to check if mouse is over button
     boolean isOnCm = mouseX > toggleCm.x-toggleCm.w/2 && mouseX < toggleCm.x+toggleCm.w/2
       && mouseY > toggleCm.y-toggleCm.h/2 && mouseY < toggleCm.y+toggleCm.h/2;
     boolean isOnFt = mouseX > toggleFt.x-toggleFt.w/2 && mouseX < toggleFt.x+toggleFt.w/2
@@ -165,7 +158,8 @@ void mouseReleased() {
     boolean isOnLb = mouseX > toggleLb.x-toggleLb.w/2 && mouseX < toggleLb.x+toggleLb.w/2
       && mouseY > toggleLb.y-toggleLb.h/2 && mouseY < toggleLb.y+toggleLb.h/2;
 
-    //toggle height unit
+    //if mouse is over the cm/ft button
+    //toggle height unit on mouse release
     if (isOnCm) {
       isCm = true;
       isFt = false;
@@ -174,7 +168,8 @@ void mouseReleased() {
       isFt = true;
     }
 
-    //toggle weight unit
+    //if mouse is over the kg/lb button
+    //toggle weight unit on mouse release
     if (isOnKg) {
       isKg = true;
       isLb = false;
@@ -183,18 +178,20 @@ void mouseReleased() {
       isLb = true;
     }
 
-    //if mouse if over font increase/decrease button
+    //booleans to check if mouse is over increase decrease font buttons
     boolean isOnPlus = mouseX > fontPlus.x-fontPlus.w/2 && mouseX < fontPlus.x+fontPlus.w/2
       && mouseY > fontPlus.y-fontPlus.h/2 && mouseY < fontPlus.y+fontPlus.h/2;
     boolean isOnMinus = mouseX > fontMinus.x-fontMinus.w/2 && mouseX < fontMinus.x+fontMinus.w/2
       && mouseY > fontMinus.y-fontMinus.h/2 && mouseY < fontMinus.y+fontMinus.h/2;
 
-    //increase font size
+    //if mouse if over font increase button
+    //increase font size on mouse release
     if (isOnPlus && fontSize <= 24) {
       fontSize += 2;
     }
 
-    //decrease font size
+    //if mouse if over font decrease button
+    //decrease font size on mouse release
     if (isOnMinus && fontSize >= 24) {
       fontSize -= 2;
     }
@@ -205,15 +202,16 @@ void mouseDragged() {
   //when on history/visualisation page
   if (state == 5) {
     //if the mouse's x position is within the range of the line drawn on the screen
+    //map mouse position to a record within the records.csv file
+    //and assign it to barX to help draw the visualisation out
+    //on mouse drag
     if (mouseX > 30 && mouseX < width-30) {
-      //map the position to a record within the records.csv file
-      //and assign it to barX to help draw the visualisation out
       barX = map(mouseX, 30, width-30, 0, records.getRowCount());
     }
   }
 }
 
-//this is shown when john stands on the mat
+//this is shown when john wakes display
 //welcomes him
 //SCREEN 1
 void displayWelcome() {
@@ -229,7 +227,7 @@ void displayWelcome() {
   controlBtn.hoverButton(2);
 }
 
-//displayed when john is weighing himself
+//displayed when weighing/scanning
 //SCREEN 2
 void displayScanning() {
   //create boolean for when scale is done taking measurements
@@ -244,7 +242,7 @@ void displayScanning() {
   //scan progress bar total outline
   rect(30, height/3, width-60, 20, 7);
 
-  //progress bar
+  //progress bar current progress
   fill(255);
   //subtract t2 from t1 to make it zero for load bar to work properly
   //not doing this will make the load bar start when program starts running
@@ -263,6 +261,7 @@ void displayScanning() {
 
   //if scanning has been completed then below text will display
   //user has ability to choose to view dashboard now too
+  //loaded boolean prevents user from reaching main page/dashboard too early
   if (loaded) {
     fill(26);
     noStroke();
@@ -334,6 +333,7 @@ void displayDisplay() {
   text(u1.getBMIDiff(), xTxt, 460);
   text(u1.getBodyFatDiff(), xTxt, 640);
 
+  //let settings and history buttons take user to their respective screens
   settingsBtn.hoverButton(4);
   historyBtn.hoverButton(5);
 }
@@ -360,26 +360,26 @@ void displaySettings() {
   fontPlus.drawButton();
 
   //height units
-  text("Height units", 30, 143);
-
   //display switch height unit buttons
+  text("Height units", 30, 143);
   toggleCm.drawButton(isCm);
   toggleFt.drawButton(isFt);
 
   //weight units
-  text("Weight units", 30, 193);
-
   //display switch weight unit buttons
+  text("Weight units", 30, 193);
   toggleKg.drawButton(isKg);
   toggleLb.drawButton(isLb);
 
   //personal settings
   textSize(fontSize+6);
   text("Personal Settings", width/2+30, 50);
-
+  
+  //user's name
   textSize(fontSize);
   text("Name: " + u1.name, width/2+30, 93);
-  //height
+  
+  //user's height
   if (isCm) {
     text("Height: " + u1.getCm() + "cm", width/2+30, 143);
   } else {
@@ -427,15 +427,15 @@ void displayDate() {
     d += "th";
   }
 
-  //formatting minutes because processing doesn't show single digits with leading zero
+  //formatting minutes because processing doesn't show single digits with padded zero
   if (mins < 10) {
     mins2 = "0" + mins;
   } else {
     mins2 = str(mins);
   }
 
-  textSize(fontSize+6);
   //write text to show time
+  textSize(fontSize+6);
   text(hour + ":" + mins2 + ", " + d + " " + m + " " + year, 30, 50);
 }
 
@@ -517,9 +517,8 @@ void drawVisualisation(int a) {
   triangle(markerX-r/2+1, markerY+7, markerX, markerY+r, markerX+r/2-1, markerY+7);
 
   //right hand side of mirror
-  textSize(fontSize);
-
   //display weight on a specific day
+  textSize(fontSize);
   float yPos = 270;
   text("Displaying ", xTxt-30, yPos);
   text("result for:", xTxt-30, yPos+30);
@@ -546,13 +545,13 @@ void drawVisualisation(int a) {
 }
 
 void drawBMI(int a) {
-  float yPos = 255;
-
   //draw bar for bmi
+  float yPos = 255;
   float bmiY = yPos + 250;
   float bmiW = 180;
 
   //unhealthy bmi bar
+  //slightly less unhealthy and healthy parts of bar will be drawn on top
   rectMode(CORNER);
   noStroke();
   fill(184, 51, 63);
@@ -564,7 +563,7 @@ void drawBMI(int a) {
   fill(237, 214, 36);
   rect(yellowX, bmiY, yellowW-yellowX, 10, 5);
   //BMI ranges found from below, numbers used to map BMI range to Processing coordinate system
-  //Coulman, K. and Toran, S.S 2020, Body mass index may not be the best indicator of our health – how can we improve it?, The Conversation, viewed 5 April 2021, <https://theconversation.com/body-mass-index-may-not-be-the-best-indicator-of-our-health-how-can-we-improve-it-143155>
+  //Coulman, K. and Toran, S. S. 2020, Body mass index may not be the best indicator of our health – how can we improve it?, The Conversation, viewed 5 April 2021, <https://theconversation.com/body-mass-index-may-not-be-the-best-indicator-of-our-health-how-can-we-improve-it-143155>.
 
   //draw healthy bmi bar
   float greenX = map(18.5, 15, 35, xTxt-30, xTxt-30+bmiW);
@@ -573,7 +572,7 @@ void drawBMI(int a) {
   rect(greenX, bmiY, greenW-greenX, 10, 2);
   rectMode(CENTER);
   //BMI ranges found from below, numbers used to map BMI range to Processing coordinate system
-  //Coulman, K. and Toran, S.S 2020, Body mass index may not be the best indicator of our health – how can we improve it?, The Conversation, viewed 5 April 2021, <https://theconversation.com/body-mass-index-may-not-be-the-best-indicator-of-our-health-how-can-we-improve-it-143155>
+  //Coulman, K. and Toran, S. S. 2020, Body mass index may not be the best indicator of our health – how can we improve it?, The Conversation, viewed 5 April 2021, <https://theconversation.com/body-mass-index-may-not-be-the-best-indicator-of-our-health-how-can-we-improve-it-143155>.
 
   //draw bmi marker along the bar
   float markerX = map(records.getFloat(a, "bmi"), 15, 35, xTxt-30, xTxt-30+bmiW);
@@ -583,7 +582,7 @@ void drawBMI(int a) {
   ellipse(markerX, markerY, r, r);
   triangle(markerX-r/2+1, markerY+7, markerX, markerY+r, markerX+r/2-1, markerY+7);
 
-  //display what would be a healthy bmi for user
+  //display what would be a healthy weight for user
   //bmi formula is bmi = kg/m^2
   textSize(fontSize-4);
   text("A healthy weight", xTxt-30, yPos+285);
@@ -592,7 +591,7 @@ void drawBMI(int a) {
   float lowerBound = 18.5 * sq(m);
   float upperBound = 24.9 * sq(m);
   //BMI formula found from below, used to rearrange equation to find ideal weight from known values (BMI (from below source) and height of user)
-  //Coulman, K. and Toran, S.S. 2020, Body mass index may not be the best indicator of our health – how can we improve it?, The Conversation, viewed 5 April 2021, <https://theconversation.com/body-mass-index-may-not-be-the-best-indicator-of-our-health-how-can-we-improve-it-143155>
+  //Coulman, K. and Toran, S. S. 2020, Body mass index may not be the best indicator of our health – how can we improve it?, The Conversation, viewed 5 April 2021, <https://theconversation.com/body-mass-index-may-not-be-the-best-indicator-of-our-health-how-can-we-improve-it-143155>.
 
   //change ideal weight range according to lbs or kg setting
   if (isKg) {
@@ -608,9 +607,8 @@ void drawBMI(int a) {
 }
 
 void drawBodyFat(int a) {
-  float yPos = 440;
-
   //draw bar for body fat %
+  float yPos = 440;  
   float bmiY = yPos + 250;
   float bmiW = 180;
 
@@ -651,7 +649,7 @@ void drawBodyFat(int a) {
   text("A healthy body ", xTxt-30, yPos+285);
   text("fat % range for you: ", xTxt-30, yPos+305);
   text("13% ~ 24.9%", xTxt-30, yPos+335);
-  //numbers for ranges from below journal, used to ensure proportion of bar is correct when mapping from 0% ~ 100% range to Processing coordinates
+  //guideline from below journal
   //Gallagher, D., Heymsfield, S. B., Heo, M., Jebb, S. A., Murgatroyd P. R. and Sakamoto, Y. 2000, 'Healthy percentage body fat ranges: an approach for developing guidelines based on body mass index', The American Journal of Clinical Nutrition, vol. 72, viewed 5 April 2021, <https://academic.oup.com/ajcn/article/72/3/694/4729363>.
 
   //reset to avoid ruining other parts of display
